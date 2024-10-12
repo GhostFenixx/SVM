@@ -333,7 +333,7 @@ class MainSVM {
   const WeatherValues = configServer.getConfig("spt-weather");
   const trader = configServer.getConfig("spt-trader");
   //const Inventory = configServer.getConfig("aki-inventory");
-  //const BlackItems = configServer.getConfig("aki-item");
+  const BlackItems = configServer.getConfig("spt-item");
   const PMC = configServer.getConfig("spt-pmc")
   //First initialising loggers
   const Misc = require('../src/Misc.json');
@@ -343,7 +343,7 @@ class MainSVM {
   }
   //############## FLEAMARKET SECTION ###########
   if (Config.Fleamarket.EnableFleamarket) {
-    if(Config.Fleamarket.EnablePlayerOffers)
+    if (Config.Fleamarket.EnablePlayerOffers)
     {
    globals.RagFair.minUserLevel = Config.Fleamarket.FleaMarketLevel;
    Ragfair.dynamic.purchasesAreFoundInRaid = Config.Fleamarket.FleaFIR;
@@ -394,7 +394,7 @@ class MainSVM {
    Ragfair.dynamic.currencies["5696686a4bdc2da3298b456a"] = Config.Fleamarket.DynamicOffers.Dollaroffers;
    Ragfair.dynamic.currencies["569668774bdc2da2298b4568"] = Config.Fleamarket.DynamicOffers.Eurooffers;
    //Wear condition in offers
-   if(Config.Fleamarket.EnableFleaConditions)
+   if (Config.Fleamarket.EnableFleaConditions)
    Ragfair.dynamic.condition["5422acb9af1c889c16000029"].max.min = parseFloat((Config.Fleamarket.FleaConditions.FleaWeapons_Min / 100).toFixed(2))
    Ragfair.dynamic.condition["543be5664bdc2dd4348b4569"].max.min = parseFloat((Config.Fleamarket.FleaConditions.FleaMedical_Min / 100).toFixed(2))
    Ragfair.dynamic.condition["5447e0e74bdc2d3c308b4567"].max.min = parseFloat((Config.Fleamarket.FleaConditions.FleaSpec_Min / 100).toFixed(2))
@@ -628,7 +628,7 @@ AirdropContents("foodMedical",Medical)
    Repair.maxIntellectGainPerRepair.kit = Config.Services.RepairBox.IntellectSkillLimitKit;
    Repair.maxIntellectGainPerRepair.trader = Config.Services.RepairBox.IntellectSkillLimitTraders;
    Repair.applyRandomizeDurabilityLoss = !Config.Services.RepairBox.NoRandomRepair;
-   if(Config.Services.InsuranceEnable)
+   if (Config.Services.InsuranceEnable)
    {
    Insurance.returnChancePercent["54cb50c76803fa8b248b4571"] = Config.Services.ReturnChancePrapor;
    Insurance.returnChancePercent["54cb57776803fa99248b456e"] = Config.Services.ReturnChanceTherapist;
@@ -683,7 +683,7 @@ AirdropContents("foodMedical",Medical)
    if (Config.Services.EnableHealMarkup) {
     let TherapistLevels = [Config.Services.TherapistLvl1, Config.Services.TherapistLvl2, Config.Services.TherapistLvl3, Config.Services.TherapistLvl4]
     for (let level in traders["54cb57776803fa99248b456e"].base.loyaltyLevels) {
-     traders["54cb57776803fa99248b456e"].base.loyaltyLevels[level].heal_price_coef = TherapistLevels[level]
+     traders["54cb57776803fa99248b456e"].base.loyaltyLevels[level].heal_price_coef = TherapistLevels[level]*100
     }
     globals.Health.HealPrice.TrialLevels = Config.Services.FreeHealLvl
     globals.Health.HealPrice.TrialRaids = Config.Services.FreeHealRaids
@@ -805,7 +805,7 @@ AirdropContents("foodMedical",Medical)
     items["a8edfb0bce53d103d3f62b9b"] = CustomPocketItem;
     //items["5795f317245977243854e041"]._props.HideEntrails = true; Still unsure what does it do
    }
-   if(Config.CSM.EnableSecureCases)
+   if (Config.CSM.EnableSecureCases)
    {
    const SecCon = Config.CSM.SecureContainers
 
@@ -834,7 +834,7 @@ AirdropContents("foodMedical",Medical)
     items[Arrays.SecConID[SecConts]]._props.Grids[0]._props["cellsH"] = SecHsize[SecConts];
    }
   }
-   if(Config.CSM.EnableCases)
+   if (Config.CSM.EnableCases)
    {
    const Cases = Config.CSM.Cases
    const Size = [
@@ -1033,7 +1033,7 @@ AirdropContents("foodMedical",Medical)
      EditSimpleItemData(id, "ExamineExperience", calculation);
     }
    //Remove the keys usage - God i hate how i wrote it
-    if(Config.Items.EnableKeys)
+    if (Config.Items.EnableKeys)
     {
     if (Config.Items.RemoveKeysUsageNumber && (base._parent == "5c99f98d86f7745c314214b3" || base._parent == "5c164d2286f774194c5e69fa") && base._props.MaximumNumberOfUsage !== undefined) {
      if (base._props.MaximumNumberOfUsage == 1 && !Config.Items.AvoidSingleKeys) {
@@ -1129,7 +1129,7 @@ AirdropContents("foodMedical",Medical)
    Health.save.health = Config.Player.DiedHealth.Savehealth;
    Health.save.effects = Config.Player.DiedHealth.Saveeffects;
    // skill eff box
-   if(Config.Player.EnableFatigue)
+   if (Config.Player.EnableFatigue)
    {
    globals.SkillMinEffectiveness = Config.Player.Skills.SkillMinEffect;
    globals.SkillFatiguePerPoint = Config.Player.Skills.SkillFatiguePerPoint;
@@ -1295,7 +1295,7 @@ AirdropContents("foodMedical",Medical)
   //############## RAIDS SECTION ################
   if (Config.Raids.EnableRaids) {
    //############## INRAID SECTION ##################
-   if(Config.Raids.RaidStartup.EnableRaidStartup)
+   if (Config.Raids.RaidStartup.EnableRaidStartup)
    {
    Inraid.MIAOnRaidEnd = Config.Raids.RaidStartup.MIAEndofRaid;
    Inraid.raidMenuSettings.aiAmount = Config.Raids.RaidStartup.AIAmount;
@@ -1714,7 +1714,7 @@ AirdropContents("foodMedical",Medical)
     }
    }
    //#######BTR STUFF
-   if(Config.Raids.EnableBTR)
+   if (Config.Raids.EnableBTR)
    {
     if (Config.Raids.ForceBTRFriendly) 
       {
@@ -1762,12 +1762,10 @@ AirdropContents("foodMedical",Medical)
    if (Config.Traders.Fence.Blacklist == "") {
     Logger.error("[SVM] TRADERS - FENCE - Do not leave Fence blacklist empty, Fence blacklist override is disabled.")
    }
-   else if (Config.Traders.Fence.Blacklist.includes("\r\n")) {
+   else (Config.Traders.Fence.Blacklist.includes("\r\n")) 
+   {
     let BlacklistArray = Config.Traders.Fence.Blacklist.split("\r\n");
-    trader.fence.blacklist = BlacklistArray
-   }
-   else if (Config.Traders.Fence.Blacklist !== null) {
-    trader.fence.blacklist = Config.Traders.Fence.Blacklist
+    BlackItems.blacklist.push(BlacklistArray);
    }
   }
    globals.TradingSettings.BuyoutRestrictions.MinDurability = Config.Traders.MinDurabSell / 100
@@ -1951,7 +1949,7 @@ AirdropContents("foodMedical",Medical)
   }
   //############## PMC SECTION ##################,
   if (Config.PMC.EnablePMC) {
-    if(Config.PMC.EnableConvert)
+    if (Config.PMC.EnableConvert)
     {
    PMC.convertIntoPmcChance.assault.min = Config.PMC.AItoPMC.ScavToPMC;
    PMC.convertIntoPmcChance.cursedassault.min = Config.PMC.AItoPMC.CursedToPMC;
@@ -1969,7 +1967,7 @@ AirdropContents("foodMedical",Medical)
     }
    PMC.botRelativeLevelDeltaMax = Config.PMC.LevelUpMargin;
    PMC.botRelativeLevelDeltaMin = Config.PMC.LevelDownMargin;
-   if(Config.PMC.EnableChances)
+   if (Config.PMC.EnableChances)
     {
       PMC.chanceSameSideIsHostilePercent = Config.PMC.PMCChance.HostilePMC;
       PMC.looseWeaponInBackpackChancePercent = Config.PMC.PMCChance.PMCLooseWep;
@@ -2123,7 +2121,7 @@ AirdropContents("foodMedical",Medical)
    const Core = configServer.getConfig("spt-core");
      Core.features.chatbotFeatures.sptFriendEnabled = !Config.Custom.DisableSPTFriend
      Core.features.chatbotFeatures.commandoEnabled = !Config.Custom.DisableCommando
-   if(Config.Custom.DisablePMCMessages)
+   if (Config.Custom.DisablePMCMessages)
    {
      const Chat = configServer.getConfig("spt-pmcchatresponse");
      Chat.victim.responseChancePercent = 0;
