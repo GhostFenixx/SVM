@@ -2,7 +2,6 @@
 
 class MainSVM {
  preSptLoad(container) {
-
   const Logger = container.resolve("WinstonLogger");
   try { //Checking for loader.json, if doesn't exist - throw a message, disable the mod.
    const PresetLoader = require('../Loader/loader.json');
@@ -85,7 +84,7 @@ class MainSVM {
    }
   }
   //PRE LOAD - RAIDS SECTION
-  if (Config.Raids.RaidEvents.Halloween || Config.Raids.RaidEvents.Christmas || Config.Raids.RaidEvents.SnowEvent)//Extra check, just in case
+  if (Config.Raids.RaidEvents.Halloween || Config.Raids.RaidEvents.Christmas)//Extra check, just in case
   {
   StaticRouterModService.registerStaticRouter("EventOverride",
        [
@@ -104,10 +103,6 @@ class MainSVM {
           {
             SeasonalEventService.updateGlobalEvents(sessionID, globalConfig, "Halloween");
           }          
-          if (Config.Raids.RaidEvents.SnowEvent)
-          {
-            SeasonalEventService.updateGlobalEvents(sessionID, globalConfig, "Snow");
-          }
           return HttpResponse.nullResponse();
         }
       }
@@ -154,6 +149,8 @@ class MainSVM {
       action: (url, info, sessionID) => {
        let pmcData = container.resolve("ProfileHelper").getPmcProfile(sessionID);
        let pockets;
+       try
+       {
        if (pmcData.Info.GameVersion == "unheard_edition")
        {
         pockets = "65e080be269cbd5c5005e529";
@@ -162,7 +159,6 @@ class MainSVM {
        {
         pockets = "627a4e6b255f7527fb05a0f6";
        }
-       try {
         pmcData.Inventory.items.forEach((item) => {
          if (item.slotId == "Pockets" &&  item._tpl == "a8edfb0bce53d103d3f62b9b") {
           item._tpl = pockets;
@@ -335,12 +331,6 @@ class MainSVM {
   //const Inventory = configServer.getConfig("aki-inventory");
   const BlackItems = configServer.getConfig("spt-item");
   const PMC = configServer.getConfig("spt-pmc")
-  //First initialising loggers
-  const Misc = require('../src/Misc.json');
-  Logger.log(`SVM 1.10.0 has initialized, ` + Misc.funni[Math.floor(Math.random() * Misc.funni.length)], "blue");
-  if (PresetLoader.CurrentlySelectedPreset != "" && PresetLoader.CurrentlySelectedPreset != undefined) {
-   Logger.log("SVM Preset - " + PresetLoader.CurrentlySelectedPreset + " - successfully loaded", "blue");
-  }
   //############## FLEAMARKET SECTION ###########
   if (Config.Fleamarket.EnableFleamarket) {
     if (Config.Fleamarket.EnablePlayerOffers)
@@ -809,29 +799,29 @@ AirdropContents("foodMedical",Medical)
    {
    const SecCon = Config.CSM.SecureContainers
 
-   const SecVsize = [
-  SecCon.AlphaVSize,
-   SecCon.KappaVSize,
-   SecCon.BetaVSize,
-   SecCon.EpsilonVSize,
-   SecCon.GammaVSize,
-   SecCon.GammaTUEVSize,
-   SecCon.WaistPouchVSize,
-   SecCon.DevVSize
+   const SecHeight = [
+  SecCon.AlphaHeight,
+   SecCon.KappaHeight,
+   SecCon.BetaHeight,
+   SecCon.EpsilonHeight,
+   SecCon.GammaHeight,
+   SecCon.GammaTUEHeight,
+   SecCon.WaistPouchHeight,
+   SecCon.DevHeight
    ];
-   const SecHsize = [
-   SecCon.AlphaHSize,
-   SecCon.KappaHSize,
-   SecCon.BetaHSize,
-   SecCon.EpsilonHSize,
-   SecCon.GammaHSize,
-   SecCon.GammaTUEHSize,
-   SecCon.WaistPouchHSize,
-   SecCon.DevHSize
+   const SecWidth = [
+   SecCon.AlphaWidth,
+   SecCon.KappaWidth,
+   SecCon.BetaWidth,
+   SecCon.EpsilonWidth,
+   SecCon.GammaWidth,
+   SecCon.GammaTUEWidth,
+   SecCon.WaistPouchWidth,
+   SecCon.DevWidth
    ];
    for (let SecConts in Arrays.SecConID) {
-    items[Arrays.SecConID[SecConts]]._props.Grids[0]._props["cellsV"] = SecVsize[SecConts];
-    items[Arrays.SecConID[SecConts]]._props.Grids[0]._props["cellsH"] = SecHsize[SecConts];
+    items[Arrays.SecConID[SecConts]]._props.Grids[0]._props["cellsV"] = SecHeight[SecConts];
+    items[Arrays.SecConID[SecConts]]._props.Grids[0]._props["cellsH"] = SecWidth[SecConts];
    }
   }
    if (Config.CSM.EnableCases)
@@ -884,8 +874,8 @@ AirdropContents("foodMedical",Medical)
     Cases.GKeychain.Filter
    ]
    for (let Case in Arrays.CasesID) {
-    items[Arrays.CasesID[Case]]._props.Grids[0]._props["cellsV"] = Size[Case].VSize;
-    items[Arrays.CasesID[Case]]._props.Grids[0]._props["cellsH"] = Size[Case].HSize;
+    items[Arrays.CasesID[Case]]._props.Grids[0]._props["cellsV"] = Size[Case].Height;
+    items[Arrays.CasesID[Case]]._props.Grids[0]._props["cellsH"] = Size[Case].Width;
    }
    //Filters
    for (let Filters in Filts) {
@@ -1304,6 +1294,19 @@ AirdropContents("foodMedical",Medical)
    Inraid.raidMenuSettings.scavWars = Config.Raids.RaidStartup.ScavWars;
    Inraid.raidMenuSettings.taggedAndCursed = Config.Raids.RaidStartup.TaggedAndCursed;
    Inraid.save.loot = Config.Raids.RaidStartup.SaveLoot;
+   }
+   if (Config.Raids.ForceSeason)//Awful solution for fancy looks, i hate myself.
+   {
+    for(let name in Arrays.SeasonsName)
+    {
+      if( Arrays.SeasonsName[name] == Config.Raids.Season)
+        {
+          Logger.info( WeatherValues.overrideSeason)
+          WeatherValues.overrideSeason = Arrays.SeasonsType[name]
+          Logger.warning( WeatherValues.overrideSeason)
+        }
+
+    }
    }
    //3.9.0 No more durability field
    //Inraid.save.durability = Config.Raids.RaidStartup.SaveDurability;
@@ -1951,18 +1954,18 @@ AirdropContents("foodMedical",Medical)
   if (Config.PMC.EnablePMC) {
     if (Config.PMC.EnableConvert)
     {
-   PMC.convertIntoPmcChance.assault.min = Config.PMC.AItoPMC.ScavToPMC;
-   PMC.convertIntoPmcChance.cursedassault.min = Config.PMC.AItoPMC.CursedToPMC;
-   PMC.convertIntoPmcChance.pmcbot.min = Config.PMC.AItoPMC.RaiderToPMC;
-   PMC.convertIntoPmcChance.exusec.min = Config.PMC.AItoPMC.RogueToPMC;
-   PMC.convertIntoPmcChance.marksman = {};
-   PMC.convertIntoPmcChance.marksman.min = Config.PMC.AItoPMC.SnipertoPMC;
+   PMC.convertIntoPmcChance.default.assault.min = Config.PMC.AItoPMC.ScavToPMC;
+   PMC.convertIntoPmcChance.default.cursedassault.min = Config.PMC.AItoPMC.CursedToPMC;
+   PMC.convertIntoPmcChance.default.pmcbot.min = Config.PMC.AItoPMC.RaiderToPMC;
+   PMC.convertIntoPmcChance.default.exusec.min = Config.PMC.AItoPMC.RogueToPMC;
+   PMC.convertIntoPmcChance.default.marksman = {};
+   PMC.convertIntoPmcChance.default.marksman.min = Config.PMC.AItoPMC.SnipertoPMC;
 
-   PMC.convertIntoPmcChance.assault.max = Config.PMC.AItoPMC.ScavToPMC;
-   PMC.convertIntoPmcChance.cursedassault.max = Config.PMC.AItoPMC.CursedToPMC;
-   PMC.convertIntoPmcChance.pmcbot.max = Config.PMC.AItoPMC.RaiderToPMC;
-   PMC.convertIntoPmcChance.exusec.max = Config.PMC.AItoPMC.RogueToPMC;
-   PMC.convertIntoPmcChance.marksman.max = Config.PMC.AItoPMC.SniperToPMC;
+   PMC.convertIntoPmcChance.default.assault.max = Config.PMC.AItoPMC.ScavToPMC;
+   PMC.convertIntoPmcChance.default.cursedassault.max = Config.PMC.AItoPMC.CursedToPMC;
+   PMC.convertIntoPmcChance.default.pmcbot.max = Config.PMC.AItoPMC.RaiderToPMC;
+   PMC.convertIntoPmcChance.default.exusec.max = Config.PMC.AItoPMC.RogueToPMC;
+   PMC.convertIntoPmcChance.default.marksman.max = Config.PMC.AItoPMC.SniperToPMC;
    PMC.isUsec = Config.PMC.PMCRatio;
     }
    PMC.botRelativeLevelDeltaMax = Config.PMC.LevelUpMargin;
@@ -2108,6 +2111,8 @@ AirdropContents("foodMedical",Medical)
       case ScavPocketSize.FirstH == 0 || ScavPocketSize.FirstV == 0:
         ScavCustomPocketItem._props.Grids.splice(0, 1);
         break;
+        default:
+          break;
     }
     items["a8edfb0bce53d103d3f6219b"] = ScavCustomPocketItem;
    }
@@ -2264,6 +2269,12 @@ if (Airdrop.loot[DBType] != undefined) {
    }
    return false;
   }
+    //initialise complete logger
+    const Misc = require('../src/Misc.json');
+    Logger.log(`SVM 1.10.0 has initialized, ` + Misc.funni[Math.floor(Math.random() * Misc.funni.length)], "blue");
+    if (PresetLoader.CurrentlySelectedPreset != "" && PresetLoader.CurrentlySelectedPreset != undefined) {
+     Logger.log("SVM Preset - " + PresetLoader.CurrentlySelectedPreset + " - successfully loaded", "blue");
+    }
  }
 }
 module.exports = {
