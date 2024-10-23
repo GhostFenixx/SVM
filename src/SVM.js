@@ -293,6 +293,7 @@ class MainSVM {
   }
 }
  postDBLoad(container) {
+  const PreDBStart = performance.now();
   const Logger = container.resolve("WinstonLogger");
   try {//This is dumb piece of code is a handler so PostDB won't run after PreDB did throw a message that something ain't right with the loader.
    const PresetLoader = require('../Loader/loader.json');
@@ -1288,33 +1289,23 @@ AirdropContents("foodMedical",Medical)
    if (Config.Raids.RaidStartup.EnableRaidStartup)
    {
    Inraid.MIAOnRaidEnd = Config.Raids.RaidStartup.MIAEndofRaid;
-   Inraid.raidMenuSettings.aiAmount = Config.Raids.RaidStartup.AIAmount;
-   Inraid.raidMenuSettings.aiDifficulty = Config.Raids.RaidStartup.AIDifficulty;
+   Inraid.raidMenuSettings.aiAmount = Arrays.AIAmount[Config.Raids.RaidStartup.AIAmount];
+   Inraid.raidMenuSettings.aiDifficulty = Arrays.AIDifficulty[Config.Raids.RaidStartup.AIDifficulty];
    Inraid.raidMenuSettings.bossEnabled = Config.Raids.RaidStartup.EnableBosses;
    Inraid.raidMenuSettings.scavWars = Config.Raids.RaidStartup.ScavWars;
    Inraid.raidMenuSettings.taggedAndCursed = Config.Raids.RaidStartup.TaggedAndCursed;
    Inraid.save.loot = Config.Raids.RaidStartup.SaveLoot;
    }
-   if (Config.Raids.ForceSeason)//Awful solution for fancy looks, i hate myself.
+   if (Config.Raids.ForceSeason)
    {
-    for(let name in Arrays.SeasonsName)
-    {
-      if( Arrays.SeasonsName[name] == Config.Raids.Season)
-        {
-          Logger.info( WeatherValues.overrideSeason)
-          WeatherValues.overrideSeason = Arrays.SeasonsType[name]
-          Logger.warning( WeatherValues.overrideSeason)
-        }
-
-    }
+     WeatherValues.overrideSeason = Config.Raids.Season;
    }
-   //3.9.0 No more durability field
-   //Inraid.save.durability = Config.Raids.RaidStartup.SaveDurability;
    trader.fence.coopExtractGift.sendGift = !Config.Raids.Exfils.FenceGift;
    const Midcore = configServer.getConfig("spt-lostondeath");
    if (Config.Raids.SaveQuestItems) {
     Midcore.questItems = false;
    }
+   //Low Ground zero level access
    locations["sandbox"].base.RequiredPlayerLevelMax = Config.Raids.SandboxAccessLevel;
    //Time acceleration
    WeatherValues.acceleration = Config.Raids.Timeacceleration
@@ -1517,8 +1508,6 @@ AirdropContents("foodMedical",Medical)
    if (Config.Raids.Exfils.ExtendedExtracts) {
     for (let map in locations) {
      switch (map) {
-      case "base":
-       break;
       case "bigmap":
        for (const extract in locations[map].base.exits) {
         locations[map].base.exits[extract].EntryPoints = "Customs,Boiler Tanks"
@@ -1989,15 +1978,6 @@ AirdropContents("foodMedical",Medical)
    if (Config.PMC.DisableLowLevelPMC) {
     Bots.equipment.pmc.randomisation[0].levelRange.max = 1;
    }
-   //Logger.warning(PMC.convertIntoPmcChance)
-  //  if (Config.PMC.ForceCustomWaves) {
-  //   //Logger.info(locs.customWaves.boss)
-  //   for (let wavemaps in locs.customWaves.boss) {
-  //    for (let pmcwaves in locs.customWaves.boss[wavemaps]) {
-  //     locs.customWaves.boss[wavemaps][pmcwaves].BossChance = Config.PMC.CustomWaveChance;
-  //    }
-  //   }
-  //  }
    if (Config.PMC.NamesEnable) {
     if (Config.PMC.NameOverride) {
      let Names = Config.PMC.PMCNameList.split("\r\n")
@@ -2024,26 +2004,13 @@ AirdropContents("foodMedical",Medical)
    const Weekly = Config.Quests.WeeklyQuests;
    const ScavDaily = Config.Quests.ScavQuests;
     //Requirements
-   QuestDetails(Daily, "0")
-   QuestDetails(Weekly, "1")
-   //Scav Daily Need to put it in method as well, but later.
-   Quest.repeatableQuests[2].resetTime = ScavDaily.Lifespan * 60;
-   let ArrayForTypes = ScavDaily.Types.split(",");
-   Quest.repeatableQuests[2].types = ArrayForTypes;
-   Quest.repeatableQuests[2].numQuests = ScavDaily.QuestAmount;
-   Quest.repeatableQuests[2].minPlayerLevel = ScavDaily.Access;
-   Quest.repeatableQuests[2].rewardScaling.rewardSpread = ScavDaily.Spread;
-   Quest.repeatableQuests[2].questConfig.Exploration.maxExtracts = ScavDaily.Extracts;
-   Quest.repeatableQuests[2].questConfig.Completion.minRequestedAmount = ScavDaily.MinItems;
-   Quest.repeatableQuests[2].questConfig.Completion.maxRequestedAmount = ScavDaily.MaxItems;
-   Quest.repeatableQuests[2].questConfig.Elimination[0].minKills = ScavDaily.MinKillsLR1;
-   Quest.repeatableQuests[2].questConfig.Elimination[0].maxKills = ScavDaily.MaxKillsLR1;
-   Quest.repeatableQuests[2].questConfig.Elimination[1].minKills = ScavDaily.MinKillsLR2;
-   Quest.repeatableQuests[2].questConfig.Elimination[1].maxKills = ScavDaily.MaxKillsLR2;
-      //Rewards
-      QuestReward(Daily,"0")
-      QuestReward(Weekly, "1")
-      QuestReward(ScavDaily, "2")
+  QuestDetails(Daily, "0")
+  QuestDetails(Weekly, "1")
+  QuestDetails(ScavDaily, "2")
+    //Rewards
+  QuestReward(Daily,"0")
+  QuestReward(Weekly, "1")
+  QuestReward(ScavDaily, "2")
   }
 
   //############## SCAV SECTION ############## I wish i never made one, but here we are
@@ -2172,8 +2139,39 @@ AirdropContents("foodMedical",Medical)
 function QuestDetails (Type, Digit)
 {
   Quest.repeatableQuests[Digit].resetTime = Type.Lifespan * 60;
-  let ArrayForTypes = Type.Types.split(",");
-  Quest.repeatableQuests[Digit].types = ArrayForTypes;
+  Quest.repeatableQuests[Digit].types = [] 
+
+  if(Digit < 2)
+  {
+  switch(Type.Types)//Horrible
+  {
+    case "0": Quest.repeatableQuests[Digit].types.push(Arrays.Types[0])
+    break;
+    case "1": Quest.repeatableQuests[Digit].types.push(Arrays.Types[1])
+    break;
+    case "2": Quest.repeatableQuests[Digit].types.push(Arrays.Types[2])
+    break;
+    case "3": Quest.repeatableQuests[Digit].types.push(Arrays.Types[0], Arrays.Types[1])
+    break;
+    case "4": Quest.repeatableQuests[Digit].types.push(Arrays.Types[1], Arrays.Types[2])
+    break;
+    case "5": Quest.repeatableQuests[Digit].types.push(Arrays.Types[2], Arrays.Types[2])
+    break;
+    case "6": Quest.repeatableQuests[Digit].types.push(Arrays.Types[0], Arrays.Types[1], Arrays.Types[2])
+    break;
+  }
+}
+else
+{
+  switch(Type.Types)
+  {
+  case "0": Quest.repeatableQuests[2].types.push(Arrays.Types[0])
+  break;
+  case "1": Quest.repeatableQuests[2].types.push(Arrays.Types[1])
+  break;
+  case "2": Quest.repeatableQuests[2].types.push(Arrays.Types[0], Arrays.Types[1])
+  }
+}
   Quest.repeatableQuests[Digit].numQuests = Type.QuestAmount;
   Quest.repeatableQuests[Digit].minPlayerLevel = Type.Access;
   Quest.repeatableQuests[Digit].rewardScaling.rewardSpread = Type.Spread;
@@ -2184,8 +2182,12 @@ function QuestDetails (Type, Digit)
   Quest.repeatableQuests[Digit].questConfig.Elimination[0].maxKills = Type.MaxKillsLR1;
   Quest.repeatableQuests[Digit].questConfig.Elimination[1].minKills = Type.MinKillsLR2;
   Quest.repeatableQuests[Digit].questConfig.Elimination[1].maxKills = Type.MaxKillsLR2;
+  if(Digit < 2)
+  {
   Quest.repeatableQuests[Digit].questConfig.Elimination[2].minKills = Type.MinKillsLR3;
   Quest.repeatableQuests[Digit].questConfig.Elimination[2].maxKills = Type.MaxKillsLR3;
+  }
+
 }
 function AirdropContents(DBType,Type)
 {
