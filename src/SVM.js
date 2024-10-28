@@ -68,6 +68,7 @@ class MainSVM {
       //const repeatableQuestController = container.resolve("RepeatableQuestController");
       let Edited = repeatableQuestController.changeRepeatableQuest(pmcData, body, sessionID);
       for (let quests in Edited.profileChanges) {
+        Logger.warning(Edited.profileChanges[quests].repeatableQuests[1])
        for (let test in Edited.profileChanges[quests].repeatableQuests[0].changeRequirement) {
         Edited.profileChanges[quests].repeatableQuests[0].changeRequirement[test].changeCost[0].count = 5000 * Config.Quests.QuestCostMult;
         if (Config.Quests.QuestRepToZero) {
@@ -102,7 +103,7 @@ class MainSVM {
           if (Config.Raids.RaidEvents.Halloween)
           {
             SeasonalEventService.updateGlobalEvents(sessionID, globalConfig, "Halloween");
-          }          
+          }
           return HttpResponse.nullResponse();
         }
       }
@@ -1064,49 +1065,79 @@ AirdropContents("foodMedical",Medical)
    if (Config.Items.IDChanger) {
     //Edit item properties, i know it looks stupid, but hey - it works and i like it.
     //4th Revision, i did short it out, makes me feel stupid not doing earlier.
-    if (Config.Items.IDBox.length > 0) {
-     Logger.info("SVM: Custom Properties enabled")
+    Logger.info("SVM: Custom Properties enabled")
      try {
-      let List = Config.Items.IDBox.split("\r\n")
+      if (Config.Items.IDDefault.length > 0) {//ID:Variable:Value
+      let List = Config.Items.IDDefault.split("\r\n")
       for (let k in List) {
-       let fin = List[k].split(":")
-       Logger.info(fin)
-       switch (fin.length) {
-        case 3:
-          items[fin[0]]._props[fin[1]] = CheckType(fin[2])
-         break;
-        case 4:
-          items[fin[0]]._props[fin[1]][fin[2]] = CheckType(fin[3])
-         break;
-        case 5:
-          items[fin[0]]._props[fin[1]][fin[2]][fin[3]] = CheckType(fin[4])
-         break;
-        case 6:
-          items[fin[0]]._props[fin[1]][fin[2]][fin[3]][fin[4]] = CheckType(fin[5])
-         break;
-        case 7:
-          items[fin[0]]._props[fin[1]][fin[2]][fin[3]][fin[4]][fin[5]] = CheckType(fin[6])
-         break;
-        case 8:
-          items[fin[0]]._props[fin[1]][fin[2]][fin[3]][fin[4]][fin[5]][fin[6]] = CheckType(fin[7])
-         break;
-        case 9:
-          items[fin[0]]._props[fin[1]][fin[2]][fin[3]][fin[4]][fin[5]][fin[6]][fin[7]] = CheckType(fin[8])
-         break;
-        case 10:
-          items[fin[0]]._props[fin[1]][fin[2]][fin[3]][fin[4]][fin[5]][fin[6]][fin[7]][fin[8]] = CheckType(fin[9])
-         break;
-        default:
-          Logger.error("[SVM] INVENTORY AND ITEMS - Custom properties line failed, something ain't right")
-         break;
-       }
+         let fin = List[k].split(":")
+         Logger.info("Default: " + fin)
+         IDChanger(fin)
+        }
       }
-      Logger.success("SVM: Custom properties successfully loaded")
-     }
+      if (Config.Items.IDParent.length > 0) { //ID=ParentID, same as above
+        let List = Config.Items.IDParent.split("\r\n")
+        let IDArray = [];
+        for (let k in List) {
+          const fin = List[k].split(":")
+          Logger.info("Parent: " + fin + "\n")
+          for(let ids in items) {
+            if(fin[0] == items[ids]._parent ) {
+              IDArray.push(items[ids]._id);
+           }
+          }
+          for( let ID in IDArray)
+          {
+            fin[0] = IDArray[ID]
+            IDChanger(fin)
+          }
+        }
+      }
+      if (Config.Items.IDFilter.length > 0) { //ID:Slots/Grids:Grid/Slot Number:Filter/ExcludedFilter:PushIntoArray
+        let List = Config.Items.IDFilter.split("\r\n")
+        for (let k in List) {
+          const fin = List[k].split(":")
+          Logger.info("Filter: " + fin + "\n")
+          if(fin.length === 5)
+          {
+            let check = CheckType(fin[4])
+            for(let fields in check)
+            {
+            items[fin[0]]._props[fin[1]][fin[2]]._props.filters[0][fin[3]].push(check[fields])
+            }
+          }
+          else
+            {
+            Logger.error("[SVM] INVENTORY AND ITEMS - Filters ID - failed to apply\n")
+            }
+          }
+        }
+        if (Config.Items.IDFilter.length > 0) { //ID:Slots/Grids:Grid/Slot Number:Filter/ExcludedFilter:PushIntoArray
+          const handbook = DB.templates.handbook.Items
+          let List = Config.Items.IDPrice.split("\r\n")
+          for (let k in List) {
+            const fin = List[k].split(":")
+            Logger.info("Price: " + fin + "\n")
+            let counter = 0;
+            for(let result in handbook)
+            {
+              if(handbook[result].Id.includes(fin[0]))
+              {
+                handbook[result].Price = fin[1]
+                counter++
+              }
+            }
+            if(counter == 0)
+              {
+                Logger.error("[SVM] INVENTORY AND ITEMS - Price ID - no " + fin[0] +" ID found in handbook\n")
+              }
+          }
+        }
+    Logger.success("SVM: Custom properties successfully loaded")
+  }
      catch (e) {
       Logger.error("[SVM] INVENTORY AND ITEMS - Custom properties failed to load, error of the code:\n" + e)
      }
-    }
    }
   }
   //############## PLAYER SECTION ###############
@@ -1550,6 +1581,8 @@ AirdropContents("foodMedical",Medical)
      }
     }
    }
+   const Events = configServer.getConfig("spt-seasonalevents");
+   Events.enableSeasonalEventDetection = !Config.Raids.RaidEvents.DisableEvents
    if (Config.Raids.RaidEvents.RaidersEverywhere) // 3.9.0 Raider rework, need to split them up into 3 fields - Start of the raid Scavs, PMC and general waves.
    {
     for (let i in locations)//Locations DB
@@ -1977,6 +2010,10 @@ AirdropContents("foodMedical",Medical)
    }
    if (Config.PMC.DisableLowLevelPMC) {
     Bots.equipment.pmc.randomisation[0].levelRange.max = 1;
+    Bots.equipment.pmc.randomisation[1].levelRange.min = 1;
+    Bots.equipment.pmc.randomisation[2].levelRange.min = 1;
+    Bots.equipment.pmc.randomisation[3].levelRange.min = 1;
+    Bots.equipment.pmc.randomisation[4].levelRange.min = 1;
    }
    if (Config.PMC.NamesEnable) {
     if (Config.PMC.NameOverride) {
@@ -2104,10 +2141,7 @@ AirdropContents("foodMedical",Medical)
      //Mind you, Custom section needs to be enabled, you can however write stuff after the bracket there to run the code if at least preset exist.
      //Fields names are `CustomCheck1,2,3,4` and `CustomNumber1,2,3,4`
    //#####
-
    
-   //#####
-  }
   //############## FUNCTIONS ##############
   //Set a Unique AI type spawn within selected location, with a lot of variables to come in.
   function CreateBoss(role, chance, followers, escortAmount, zones) {
@@ -2250,6 +2284,38 @@ if (Airdrop.loot[DBType] != undefined) {
    if (Exit.RequiredSlot) {
     delete Exit.RequiredSlot;
    }
+  }
+  function IDChanger(fin)
+  {
+    switch (fin.length) {
+      case 3:
+        items[fin[0]]._props[fin[1]] = CheckType(fin[2])
+       break;
+      case 4:
+        items[fin[0]]._props[fin[1]][fin[2]] = CheckType(fin[3])
+       break;
+      case 5:
+        items[fin[0]]._props[fin[1]][fin[2]][fin[3]] = CheckType(fin[4])
+       break;
+      case 6:
+        items[fin[0]]._props[fin[1]][fin[2]][fin[3]][fin[4]] = CheckType(fin[5])
+       break;
+      case 7:
+        items[fin[0]]._props[fin[1]][fin[2]][fin[3]][fin[4]][fin[5]] = CheckType(fin[6])
+       break;
+      case 8:
+        items[fin[0]]._props[fin[1]][fin[2]][fin[3]][fin[4]][fin[5]][fin[6]] = CheckType(fin[7])
+       break;
+      case 9:
+        items[fin[0]]._props[fin[1]][fin[2]][fin[3]][fin[4]][fin[5]][fin[6]][fin[7]] = CheckType(fin[8])
+       break;
+      case 10:
+        items[fin[0]]._props[fin[1]][fin[2]][fin[3]][fin[4]][fin[5]][fin[6]][fin[7]][fin[8]] = CheckType(fin[9])
+       break;
+      default:
+        Logger.error("[SVM] INVENTORY AND ITEMS - Custom properties line failed, something ain't right")
+       break;
+     }
   }
   function CheckType(object)
   {
