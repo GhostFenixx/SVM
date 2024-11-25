@@ -721,30 +721,30 @@ class MainSVM {
           CustomPocketItem._props.Slots[cell]._parent = "a8edfb0bce53d103d3f62b9b"
         }
         CustomPocketItem._props.Grids[0]._id = "a8edfb0bce53d103d3f62b0b"
-        CustomPocketItem._props.Grids[0]._props.cellsH = PocketSize.FirstH
-        CustomPocketItem._props.Grids[0]._props.cellsV = PocketSize.FirstV
+        CustomPocketItem._props.Grids[0]._props.cellsH = PocketSize.FirstWidth
+        CustomPocketItem._props.Grids[0]._props.cellsV = PocketSize.FirstHeight
         CustomPocketItem._props.Grids[1]._id = "a8edfb0bce53d103d3f62b1b"
-        CustomPocketItem._props.Grids[1]._props.cellsH = PocketSize.SecondH
-        CustomPocketItem._props.Grids[1]._props.cellsV = PocketSize.SecondV
+        CustomPocketItem._props.Grids[1]._props.cellsH = PocketSize.SecondWidth
+        CustomPocketItem._props.Grids[1]._props.cellsV = PocketSize.SecondHeight
         CustomPocketItem._props.Grids[2]._id = "a8edfb0bce53d103d3f62b2b"
-        CustomPocketItem._props.Grids[2]._props.cellsH = PocketSize.ThirdH
-        CustomPocketItem._props.Grids[2]._props.cellsV = PocketSize.ThirdV
+        CustomPocketItem._props.Grids[2]._props.cellsH = PocketSize.ThirdWidth
+        CustomPocketItem._props.Grids[2]._props.cellsV = PocketSize.ThirdHeight
         CustomPocketItem._props.Grids[3]._id = "a8edfb0bce53d103d3f62b3b"
-        CustomPocketItem._props.Grids[3]._props.cellsH = PocketSize.FourthH
-        CustomPocketItem._props.Grids[3]._props.cellsV = PocketSize.FourthV
+        CustomPocketItem._props.Grids[3]._props.cellsH = PocketSize.FourthWidth
+        CustomPocketItem._props.Grids[3]._props.cellsV = PocketSize.FourthHeight
         CustomPocketItem._props.Slots[0]._id = "a8edfb0bce53d103d3f62b4b"
         CustomPocketItem._props.Slots[1]._id = "a8edfb0bce53d103d3f62b5b"
         CustomPocketItem._props.Slots[2]._id = "a8edfb0bce53d103d3f62b6b"
-        if (PocketSize.FourthH == 0 || PocketSize.FourthV == 0) {
+        if (PocketSize.FourthWidth == 0 || PocketSize.FourthHeight == 0) {
           CustomPocketItem._props.Grids.splice(3, 1);
         }
-        if (PocketSize.ThirdH == 0 || PocketSize.ThirdV == 0) {
+        if (PocketSize.ThirdWidth == 0 || PocketSize.ThirdHeight == 0) {
           CustomPocketItem._props.Grids.splice(2, 1);
         }
-        if (PocketSize.SecondH == 0 || PocketSize.SecondV == 0) {
+        if (PocketSize.SecondWidth == 0 || PocketSize.SecondHeight == 0) {
           CustomPocketItem._props.Grids.splice(1, 1);
         }
-        if (PocketSize.FirstH == 0 || PocketSize.FirstV == 0) {
+        if (PocketSize.FirstWidth == 0 || PocketSize.FirstHeight == 0) {
           CustomPocketItem._props.Grids.splice(0, 1);
         }
 
@@ -1064,40 +1064,40 @@ class MainSVM {
       }
       if (Config.Items.IDChanger) {
         //Edit item properties, i know it looks stupid, but hey - it works and i like it.
-        //5th revision, now including separate fields for filters and parents
+        //5th revision, now including separate fields for filters, parents and expressions.
         Logger.info("[SVM] Custom Properties is loading", "blue")
         try {
-          if (Config.Items.IDDefault.length > 0) {//ID:Variable:Value
-            let List = Config.Items.IDDefault.split("\r\n")
-            for (let k in List) {
-              let fin = List[k].split(":")
-              Logger.info("Default: " + fin)
-              IDChanger(fin)
-            }
-          }
           if (Config.Items.IDParent.length > 0) { //ID=ParentID, same as above
-            let List = Config.Items.IDParent.split("\r\n")
+            let ParentList = Config.Items.IDParent.split("\r\n")
             let IDArray = [];
-            for (let k in List) {
-              const fin = List[k].split(":")
-              Logger.info("Parent: " + fin)
+            for (let Line in ParentList) {
+              const Variables = ParentList[Line].split(":")
+              Logger.info("Parent: " + Variables)
               for (let ids in items) {
-                if (fin[0] == items[ids]._parent) {
+                if (Variables[0] == items[ids]._parent) {
                   IDArray.push(items[ids]._id);
                 }
               }
               Logger.info("Affected by parent: ")
               Logger.info(IDArray)
               for (let ID in IDArray) {
-                fin[0] = IDArray[ID]
-                IDChanger(fin)
+                Variables[0] = IDArray[ID]
+                IDChanger(Variables)
               }
+            }
+          }
+          if (Config.Items.IDDefault.length > 0) {//ID:Variable:Value
+            let DefaultList = Config.Items.IDDefault.split("\r\n")
+            for (let Line in DefaultList) {
+              let Variables = DefaultList[Line].split(":")
+              Logger.info("Default: " + Variables)
+              IDChanger(Variables)
             }
           }
           if (Config.Items.IDFilter.length > 0) { //ID:Slots/Grids:Grid/Slot Number:Filter/ExcludedFilter:PushIntoArray
             let FilterList = Config.Items.IDFilter.split("\r\n")
-            for (let k in FilterList) {
-              const Variables = FilterList[k].split(":")
+            for (let Line in FilterList) {
+              const Variables = FilterList[Line].split(":")
               Logger.info("Filter: " + Variables)
               if (Variables.length === 5) {
                 let check = CheckType(Variables[4])
@@ -2087,25 +2087,25 @@ class MainSVM {
           ScavCustomPocketItem._props.Grids[cell]._parent = "a8edfb0bce53d103d3f6219b"
         }
         ScavCustomPocketItem._props.Grids[0]._id = "a8edfb0bce53d103d3f6229b"
-        ScavCustomPocketItem._props.Grids[0]._props.cellsH = ScavPocketSize.FirstH
-        ScavCustomPocketItem._props.Grids[0]._props.cellsV = ScavPocketSize.FirstV
+        ScavCustomPocketItem._props.Grids[0]._props.cellsH = ScavPocketSize.FirstWidth
+        ScavCustomPocketItem._props.Grids[0]._props.cellsV = ScavPocketSize.FirstHeight
         ScavCustomPocketItem._props.Grids[1]._id = "a8edfb0bce53d103d3f6239b"
-        ScavCustomPocketItem._props.Grids[1]._props.cellsH = ScavPocketSize.SecondH
-        ScavCustomPocketItem._props.Grids[1]._props.cellsV = ScavPocketSize.SecondV
+        ScavCustomPocketItem._props.Grids[1]._props.cellsH = ScavPocketSize.SecondWidth
+        ScavCustomPocketItem._props.Grids[1]._props.cellsV = ScavPocketSize.SecondHeight
         ScavCustomPocketItem._props.Grids[2]._id = "a8edfb0bce53d103d3f6249b"
-        ScavCustomPocketItem._props.Grids[2]._props.cellsH = ScavPocketSize.ThirdH
-        ScavCustomPocketItem._props.Grids[2]._props.cellsV = ScavPocketSize.ThirdV
+        ScavCustomPocketItem._props.Grids[2]._props.cellsH = ScavPocketSize.ThirdWidth
+        ScavCustomPocketItem._props.Grids[2]._props.cellsV = ScavPocketSize.ThirdHeight
         ScavCustomPocketItem._props.Grids[3]._id = "a8edfb0bce53d103d3f6259b"
-        ScavCustomPocketItem._props.Grids[3]._props.cellsH = ScavPocketSize.FourthH
-        ScavCustomPocketItem._props.Grids[3]._props.cellsV = ScavPocketSize.FourthV
+        ScavCustomPocketItem._props.Grids[3]._props.cellsH = ScavPocketSize.FourthWidth
+        ScavCustomPocketItem._props.Grids[3]._props.cellsV = ScavPocketSize.FourthHeight
         switch (true) {
-          case ScavPocketSize.FourthH == 0 || ScavPocketSize.FourthV == 0:
+          case ScavPocketSize.FourthWidth == 0 || ScavPocketSize.FourthHeight == 0:
             ScavCustomPocketItem._props.Grids.splice(3, 1)
-          case ScavPocketSize.ThirdH == 0 || ScavPocketSize.ThirdV == 0:
+          case ScavPocketSize.ThirdWidth == 0 || ScavPocketSize.ThirdHeight == 0:
             ScavCustomPocketItem._props.Grids.splice(2, 1);
-          case ScavPocketSize.SecondH == 0 || ScavPocketSize.SecondV == 0:
+          case ScavPocketSize.SecondWidth == 0 || ScavPocketSize.SecondHeight == 0:
             ScavCustomPocketItem._props.Grids.splice(1, 1);
-          case ScavPocketSize.FirstH == 0 || ScavPocketSize.FirstV == 0:
+          case ScavPocketSize.FirstWidth == 0 || ScavPocketSize.FirstHeight == 0:
             ScavCustomPocketItem._props.Grids.splice(0, 1);
             break;
           default:
