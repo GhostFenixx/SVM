@@ -1125,7 +1125,7 @@ class MainSVM {
                 }
               }
               if (IDChecker) {
-                Logger.warning("[SVM] INVENTORY AND ITEMS - Price ID - " + Variables[0] + "- This ID is not found in handbook.s\nChecking as ParentID")
+                Logger.warning("[SVM] INVENTORY AND ITEMS - Price ID - " + Variables[0] + " - This ID is not found in handbook.\nChecking as ParentID")
                 let childs = []
                 for (let ID in items) {
                   if (items[ID]._parent == Variables[0]) {
@@ -1808,11 +1808,8 @@ class MainSVM {
       globals.TradingSettings.BuyoutRestrictions.MinDurability = Config.Traders.MinDurabSell / 100
       Quest.redeemTime = Config.Traders.QuestRedeemTime;
       trader.purchasesAreFoundInRaid = Config.Traders.FIRTrade;
-      //Logger.info( traders["6617beeaa9cfa777ca915b7c"].unlockedByDefault)
       traders["5c0647fdd443bc2504c2d371"].base.unlockedByDefault = Config.Traders.UnlockJaeger
       traders["6617beeaa9cfa777ca915b7c"].base.unlockedByDefault = Config.Traders.UnlockRef
-      //Logger.warning( traders["6617beeaa9cfa777ca915b7c"].unlockedByDefault)
-
       const Mark = Config.Traders.TraderMarkup;
       const MarkArray = [Mark.Prapor,
       Mark.Therapist,
@@ -1872,7 +1869,6 @@ class MainSVM {
           }
         }
       }
-
       //Enable all traders 4 stars
       if (Config.Traders.TradersLvl4) {
         for (let traderID in traders) {
