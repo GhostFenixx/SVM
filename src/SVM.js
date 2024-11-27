@@ -118,30 +118,18 @@ class MainSVM {
         }, { frequency: "Always" });
       }
     }
-    if (Config.Raids.SafeExit) {
-      container.afterResolution("InraidCallbacks", (_t, result) => {
-        result.saveProgress = (url, info, sessionID) => {
-          if (info.exit == "left" && !info.isPlayerScav) {
-            info.exit = "runner"
-          }
-          const InraidController = container.resolve("InraidController");
-          InraidController.savePostRaidProgress(info, sessionID);
-          return HttpResponse.nullResponse();
-        }
-      }, { frequency: "Always" });
-    }
-    if (Config.Raids.SaveGearAfterDeath) {
-      container.afterResolution("InraidCallbacks", (_t, result) => {
-        result.saveProgress = (url, info, sessionID) => {
-          if (info.exit !== "survived" && !info.isPlayerScav) {
-            info.exit = "runner"
-          }
-          const InraidController = container.resolve("InraidController");
-          InraidController.savePostRaidProgress(info, sessionID);
-          return HttpResponse.nullResponse();
-        }
-      }, { frequency: "Always" });
-    }
+
+      // container.afterResolution("MatchCallbacks", (_t, result) => {
+      //   result.endLocalRaid = (url, info, sessionID) => {
+      //     if (info.results !== "Survived") {
+      //       info.results = "Runner"
+      //     }
+      //     const MatchController = container.resolve("MatchController");
+      //     MatchController.endLocalRaid(sessionID, info);
+      //     return HttpResponse.nullResponse();
+      //   }
+      // }, { frequency: "Always" });
+
     //PRE LOAD - CSM SECTION
     //Attempt to fix pockets if custom is not present
     StaticRouterModService.registerStaticRouter("Revive Pockets",
@@ -618,7 +606,7 @@ class MainSVM {
       Repair.maxIntellectGainPerRepair.kit = Config.Services.RepairBox.IntellectSkillLimitKit;
       Repair.maxIntellectGainPerRepair.trader = Config.Services.RepairBox.IntellectSkillLimitTraders;
       Repair.applyRandomizeDurabilityLoss = !Config.Services.RepairBox.NoRandomRepair;
-      if (Config.Services.InsuranceEnable) {
+      if (Config.Services.EnableInsurance) {
         Insurance.returnChancePercent["54cb50c76803fa8b248b4571"] = Config.Services.ReturnChancePrapor;
         Insurance.returnChancePercent["54cb57776803fa99248b456e"] = Config.Services.ReturnChanceTherapist;
         traders["54cb50c76803fa8b248b4571"].base.insurance.max_storage_time = Config.Services.PraporStorageTime;
@@ -1349,6 +1337,12 @@ class MainSVM {
       if (Config.Raids.SaveQuestItems) {
         Midcore.questItems = false;
       }
+      if (Config.Raids.SaveGearAfterDeath){
+          for(let stuff in Midcore.equipment)
+          {
+            Midcore.equipment[stuff] = false;
+          }
+        }
       //Low Ground zero level access
       locations["sandbox"].base.RequiredPlayerLevelMax = Config.Raids.SandboxAccessLevel;
       //Time acceleration
@@ -1710,6 +1704,8 @@ class MainSVM {
           locations["shoreline"].base.BossLocationSpawn.push(BossWave)
           BossWave = CreateBoss("bossKolontay", 100, "followerSanitar", 0, "ZoneSanatorium1,ZoneSanatorium2")
           locations["shoreline"].base.BossLocationSpawn.push(BossWave)
+          const Goons = Waves.Goons
+          Goons.BossZone = "ZoneSanatorium1,ZoneSanatorium2"
           locations["shoreline"].base.BossLocationSpawn.push(Goons)
         }
       }
@@ -1993,7 +1989,7 @@ class MainSVM {
       }
       PMC.botRelativeLevelDeltaMax = Config.PMC.LevelUpMargin;
       PMC.botRelativeLevelDeltaMin = Config.PMC.LevelDownMargin;
-      if (Config.PMC.EnableChances) {
+      if (Config.PMC.ChancesEnable) {
         PMC.chanceSameSideIsHostilePercent = Config.PMC.PMCChance.HostilePMC;
         PMC.looseWeaponInBackpackChancePercent = Config.PMC.PMCChance.PMCLooseWep;
         PMC.weaponHasEnhancementChancePercent = Config.PMC.PMCChance.PMCWepEnhance;
@@ -2013,7 +2009,7 @@ class MainSVM {
         Bots.equipment.pmc.randomisation[1].levelRange.min = 1;
         Bots.equipment.pmc.randomisation[2].levelRange.min = 1;
         Bots.equipment.pmc.randomisation[3].levelRange.min = 1;
-        Bots.equipment.pmc.randomisation[4].levelRange.min = 1;
+        //Bots.equipment.pmc.randomisation[4].levelRange.min = 1;
       }
       if (Config.PMC.NamesEnable) {
         if (Config.PMC.NameOverride) {
