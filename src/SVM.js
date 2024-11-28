@@ -1228,8 +1228,8 @@ class MainSVM {
         }
       }
       //Enable fast hideout production
-      for (const data in hideout.recipes) {
-        let productionData = hideout.recipes[data];
+      for (const data in hideout.production.recipes) {
+        let productionData = hideout.production.recipes[data];
 
         if (productionData._id == "5d5589c1f934db045e6c5492") {
           productionData.productionTime = Config.Hideout.WaterFilterTime * 60
@@ -1247,19 +1247,19 @@ class MainSVM {
         }
       }
       //Scav cases modifications
-      for (const scav in hideout.scavRecipes) {
-        let caseData = hideout.scavRecipes[scav];
-        if (caseData.ProductionTime >= 10) {
-          caseData.ProductionTime = parseInt(caseData.ProductionTime * Config.Hideout.ScavCaseTime);
-          if (caseData.ProductionTime < 1) {
-            caseData.ProductionTime = 2
+      for (const scav in hideout.production.scavRecipes) {
+        let caseData = hideout.production.scavRecipes[scav];
+        if (caseData.productionTime >= 10) {
+          caseData.productionTime = parseInt(caseData.productionTime * Config.Hideout.ScavCaseTime);
+          if (caseData.productionTime < 1) {
+            caseData.productionTime = 2
           }
         }
       }
-      for (const scase in hideout.scavRecipes) {
-        let caseData = hideout.scavRecipes[scase];
-        if (caseData.Requirements[0].templateId == "5449016a4bdc2d6f028b456f" || caseData.Requirements[0].templateId == "5696686a4bdc2da3298b456a" || caseData.Requirements[0].templateId == "569668774bdc2da2298b4568") {
-          caseData.Requirements[0].count = parseInt(caseData.Requirements[0].count * Config.Hideout.ScavCasePrice);
+      for (const scase in hideout.production.scavRecipes) {
+        let caseData = hideout.production.scavRecipes[scase];
+        if (caseData.requirements[0].templateId == "5449016a4bdc2d6f028b456f" || caseData.requirements[0].templateId == "5696686a4bdc2da3298b456a" || caseData.requirements[0].templateId == "569668774bdc2da2298b4568") {
+          caseData.requirements[0].count = parseInt(caseData.requirements[0].count * Config.Hideout.ScavCasePrice);
         }
       }
       //Remove construction requirements
