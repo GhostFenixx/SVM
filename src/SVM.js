@@ -119,16 +119,16 @@ class MainSVM {
       }
     }
 
-      // container.afterResolution("MatchCallbacks", (_t, result) => {
-      //   result.endLocalRaid = (url, info, sessionID) => {
-      //     if (info.results !== "Survived") {
-      //       info.results = "Runner"
-      //     }
-      //     const MatchController = container.resolve("MatchController");
-      //     MatchController.endLocalRaid(sessionID, info);
-      //     return HttpResponse.nullResponse();
-      //   }
-      // }, { frequency: "Always" });
+    // container.afterResolution("MatchCallbacks", (_t, result) => {
+    //   result.endLocalRaid = (url, info, sessionID) => {
+    //     if (info.results !== "Survived") {
+    //       info.results = "Runner"
+    //     }
+    //     const MatchController = container.resolve("MatchController");
+    //     MatchController.endLocalRaid(sessionID, info);
+    //     return HttpResponse.nullResponse();
+    //   }
+    // }, { frequency: "Always" });
 
     //PRE LOAD - CSM SECTION
     //Attempt to fix pockets if custom is not present
@@ -1228,8 +1228,8 @@ class MainSVM {
         }
       }
       //Enable fast hideout production
-      for (const data in hideout.production) {
-        let productionData = hideout.production[data];
+      for (const data in hideout.recipes) {
+        let productionData = hideout.recipes[data];
 
         if (productionData._id == "5d5589c1f934db045e6c5492") {
           productionData.productionTime = Config.Hideout.WaterFilterTime * 60
@@ -1247,8 +1247,8 @@ class MainSVM {
         }
       }
       //Scav cases modifications
-      for (const scav in hideout.scavcase) {
-        let caseData = hideout.scavcase[scav];
+      for (const scav in hideout.scavRecipes) {
+        let caseData = hideout.scavRecipes[scav];
         if (caseData.ProductionTime >= 10) {
           caseData.ProductionTime = parseInt(caseData.ProductionTime * Config.Hideout.ScavCaseTime);
           if (caseData.ProductionTime < 1) {
@@ -1256,8 +1256,8 @@ class MainSVM {
           }
         }
       }
-      for (const scase in hideout.scavcase) {
-        let caseData = hideout.scavcase[scase];
+      for (const scase in hideout.scavRecipes) {
+        let caseData = hideout.scavRecipes[scase];
         if (caseData.Requirements[0].templateId == "5449016a4bdc2d6f028b456f" || caseData.Requirements[0].templateId == "5696686a4bdc2da3298b456a" || caseData.Requirements[0].templateId == "569668774bdc2da2298b4568") {
           caseData.Requirements[0].count = parseInt(caseData.Requirements[0].count * Config.Hideout.ScavCasePrice);
         }
@@ -1337,12 +1337,18 @@ class MainSVM {
       if (Config.Raids.SaveQuestItems) {
         Midcore.questItems = false;
       }
-      if (Config.Raids.SaveGearAfterDeath){
-          for(let stuff in Midcore.equipment)
-          {
-            Midcore.equipment[stuff] = false;
+      if (Config.Raids.SaveGearAfterDeath) {
+        for (let stuff in Midcore.equipment) {
+          Midcore.equipment[stuff] = false;
+        }
+        for (const id in items) {
+          let base = items[id]
+          //Examining time
+          if (base._props.InsuranceDisabled !== undefined) {
+            EditSimpleItemData(id, "InsuranceDisabled", true);
           }
         }
+      }
       //Low Ground zero level access
       locations["sandbox"].base.RequiredPlayerLevelMax = Config.Raids.SandboxAccessLevel;
       //Time acceleration
@@ -1590,7 +1596,7 @@ class MainSVM {
         }
       }
       Events.events[0].settings.zombieSettings.enabled = !Config.Raids.RaidEvents.DisableZombies
-      if(Config.Raids.RaidEvents.RandomInfectionLevel){
+      if (Config.Raids.RaidEvents.RandomInfectionLevel) {
         Events.events[0].settings.zombieSettings.mapInfectionAmount =
         {
           "laboratory": 100,
@@ -2259,55 +2265,53 @@ class MainSVM {
       }
     }
     function IDChanger(Variables) {
-      try
-      {
-      switch (Variables.length) {
-        case 3:
-          items[Variables[0]]._props[Variables[1]] = CheckType(Variables[2])
-          break;
-        case 4:
-          if (SymbolCheck(Variables[2])){
-          items[Variables[0]]._props[Variables[1]] = Calculus(items[Variables[0]]._props[Variables[1]],Variables[2],Variables[3])
-          }
-          else{
-          items[Variables[0]]._props[Variables[1]][Variables[2]] = CheckType(Variables[3])
-          }
-          break;
-        case 5:
-          if (SymbolCheck(Variables[3])){
-            items[Variables[0]]._props[Variables[1]][Variables[2]] = Calculus(items[Variables[0]]._props[Variables[1]][Variables[2]],Variables[3],Variables[4])
-          }
-          else{
-          items[Variables[0]]._props[Variables[1]][Variables[2]][Variables[3]] = CheckType(Variables[4])
-          }
-          break;
-        case 6:
-          if (SymbolCheck(Variables[4])){
-            items[Variables[0]]._props[Variables[1]][Variables[2]][Variables[3]] = Calculus(items[Variables[0]]._props[Variables[1]][Variables[2]][Variables[3]],Variables[4],Variables[5])
-          }
-          else{
-          items[Variables[0]]._props[Variables[1]][Variables[2]][Variables[3]][Variables[4]] = CheckType(Variables[5])
-          }
-          break;
-        case 7:
-          items[Variables[0]]._props[Variables[1]][Variables[2]][Variables[3]][Variables[4]][Variables[5]] = CheckType(Variables[6])
-          break;
-        case 8:
-          items[Variables[0]]._props[Variables[1]][Variables[2]][Variables[3]][Variables[4]][Variables[5]][Variables[6]] = CheckType(Variables[7])
-          break;
-        case 9:
-          items[Variables[0]]._props[Variables[1]][Variables[2]][Variables[3]][Variables[4]][Variables[5]][Variables[6]][Variables[7]] = CheckType(Variables[8])
-          break;
-        case 10:
-          items[Variables[0]]._props[Variables[1]][Variables[2]][Variables[3]][Variables[4]][Variables[5]][Variables[6]][Variables[7]][Variables[8]] = CheckType(Variables[9])
-          break;
-        default:
-          Logger.error("[SVM] INVENTORY AND ITEMS - Custom properties line failed, More than 10 or less than 3 variables?")
-          break;
+      try {
+        switch (Variables.length) {
+          case 3:
+            items[Variables[0]]._props[Variables[1]] = CheckType(Variables[2])
+            break;
+          case 4:
+            if (SymbolCheck(Variables[2])) {
+              items[Variables[0]]._props[Variables[1]] = Calculus(items[Variables[0]]._props[Variables[1]], Variables[2], Variables[3])
+            }
+            else {
+              items[Variables[0]]._props[Variables[1]][Variables[2]] = CheckType(Variables[3])
+            }
+            break;
+          case 5:
+            if (SymbolCheck(Variables[3])) {
+              items[Variables[0]]._props[Variables[1]][Variables[2]] = Calculus(items[Variables[0]]._props[Variables[1]][Variables[2]], Variables[3], Variables[4])
+            }
+            else {
+              items[Variables[0]]._props[Variables[1]][Variables[2]][Variables[3]] = CheckType(Variables[4])
+            }
+            break;
+          case 6:
+            if (SymbolCheck(Variables[4])) {
+              items[Variables[0]]._props[Variables[1]][Variables[2]][Variables[3]] = Calculus(items[Variables[0]]._props[Variables[1]][Variables[2]][Variables[3]], Variables[4], Variables[5])
+            }
+            else {
+              items[Variables[0]]._props[Variables[1]][Variables[2]][Variables[3]][Variables[4]] = CheckType(Variables[5])
+            }
+            break;
+          case 7:
+            items[Variables[0]]._props[Variables[1]][Variables[2]][Variables[3]][Variables[4]][Variables[5]] = CheckType(Variables[6])
+            break;
+          case 8:
+            items[Variables[0]]._props[Variables[1]][Variables[2]][Variables[3]][Variables[4]][Variables[5]][Variables[6]] = CheckType(Variables[7])
+            break;
+          case 9:
+            items[Variables[0]]._props[Variables[1]][Variables[2]][Variables[3]][Variables[4]][Variables[5]][Variables[6]][Variables[7]] = CheckType(Variables[8])
+            break;
+          case 10:
+            items[Variables[0]]._props[Variables[1]][Variables[2]][Variables[3]][Variables[4]][Variables[5]][Variables[6]][Variables[7]][Variables[8]] = CheckType(Variables[9])
+            break;
+          default:
+            Logger.error("[SVM] INVENTORY AND ITEMS - Custom properties line failed, More than 10 or less than 3 variables?")
+            break;
         }
       }
-      catch(e)
-      {
+      catch (e) {
         Logger.error("[SVM] INVENTORY AND ITEMS - Custom properties line failed, something ain't right\n" + e)
       }
     }
@@ -2322,7 +2326,7 @@ class MainSVM {
         return JSON.parse(object)
       }
     }
-    function SymbolCheck(Value){
+    function SymbolCheck(Value) {
       return (Value == "*" || Value == "/" || Value == "+" || Value == "-");
     }
     function Calculus(Field, Operand, Value) {
