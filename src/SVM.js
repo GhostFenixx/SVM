@@ -1610,6 +1610,16 @@ class MainSVM {
           "factory4": Math.floor(Math.random() * 100),
           "Lighthouse": Math.floor(Math.random() * 100)
         }
+        for(let map in Events.eventBossSpawns.halloweenzombies)
+        {
+          for (let wave in  Events.eventBossSpawns.halloweenzombies[map])
+          {
+            if  (Events.eventBossSpawns.halloweenzombies[map][wave].ForceSpawn !== undefined)
+            {
+              Events.eventBossSpawns.halloweenzombies[map].ForceSpawn = true;
+            }
+          }
+        }
       }
       Events.enableSeasonalEventDetection = !Config.Raids.RaidEvents.DisableEvents
       if (Config.Raids.RaidEvents.RaidersEverywhere) // 3.9.0 Raider rework, need to split them up into 3 fields - Start of the raid Scavs, PMC and general waves.
