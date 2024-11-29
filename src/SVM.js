@@ -119,17 +119,30 @@ class MainSVM {
       }
     }
 
-    // container.afterResolution("MatchCallbacks", (_t, result) => {
-    //   result.endLocalRaid = (url, info, sessionID) => {
-    //     if (info.results !== "Survived") {
-    //       info.results = "Runner"
-    //     }
-    //     const MatchController = container.resolve("MatchController");
-    //     MatchController.endLocalRaid(sessionID, info);
-    //     return HttpResponse.nullResponse();
-    //   }
-    // }, { frequency: "Always" });
-
+    if (Config.Raids.SafeExit) {
+      container.afterResolution("MatchCallbacks", (_t, result) => {
+        result.endLocalRaid = (url, info, sessionID) => {
+          if (info.results.result == "Left") {
+            info.results.result = "Runner"
+          }
+          const MatchController = container.resolve("MatchController");
+          MatchController.endLocalRaid(sessionID, info);
+          return HttpResponse.nullResponse();
+        }
+      }, { frequency: "Always" });
+    }
+    if (Config.Raids.SaveGearAfterDeath) {
+      container.afterResolution("MatchCallbacks", (_t, result) => {
+        result.endLocalRaid = (url, info, sessionID) => {
+          if (info.results.result !== "Survived") {
+            info.results.result = "Runner"
+          }
+          const MatchController = container.resolve("MatchController");
+          MatchController.endLocalRaid(sessionID, info);
+          return HttpResponse.nullResponse();
+        }
+      }, { frequency: "Always" });
+    }
     //PRE LOAD - CSM SECTION
     //Attempt to fix pockets if custom is not present
     StaticRouterModService.registerStaticRouter("Revive Pockets",
@@ -1011,7 +1024,7 @@ class MainSVM {
         }
         //Remove the keys usage - God i hate how i wrote it
         if (Config.Items.EnableKeys) {
-          if (Config.Items.InfiniteKeys && (base._parent == "5c99f98d86f7745c314214b3" || base._parent == "5c164d2286f774194c5e69fa") && base._props.MaximumNumberOfUsage !== undefined) {
+          if ((base._parent == "5c99f98d86f7745c314214b3" || base._parent == "5c164d2286f774194c5e69fa") && base._props.MaximumNumberOfUsage !== undefined) {
             if (base._props.MaximumNumberOfUsage == 1 && !Config.Items.AvoidSingleKeys) {
               base._props.MaximumNumberOfUsage = 0
             }
@@ -1021,7 +1034,7 @@ class MainSVM {
             if (!(Arrays.MarkedKeys.includes(base._id)) && base._props.MaximumNumberOfUsage !== 1) {
               base._props.MaximumNumberOfUsage = 0
             }
-            if (base._parent == "5c164d2286f774194c5e69fa" && base._props.MaximumNumberOfUsage !== undefined && Config.Items.InfiniteKeycards) {
+            if (base._parent == "5c164d2286f774194c5e69fa" && Config.Items.InfiniteKeycards) {
               base._props.MaximumNumberOfUsage = 0
             }
 
@@ -1336,18 +1349,6 @@ class MainSVM {
       const Midcore = configServer.getConfig("spt-lostondeath");
       if (Config.Raids.SaveQuestItems) {
         Midcore.questItems = false;
-      }
-      if (Config.Raids.SaveGearAfterDeath) {
-        for (let stuff in Midcore.equipment) {
-          Midcore.equipment[stuff] = false;
-        }
-        for (const id in items) {
-          let base = items[id]
-          //Examining time
-          if (base._props.InsuranceDisabled !== undefined) {
-            EditSimpleItemData(id, "InsuranceDisabled", true);
-          }
-        }
       }
       //Low Ground zero level access
       locations["sandbox"].base.RequiredPlayerLevelMax = Config.Raids.SandboxAccessLevel;
@@ -2168,33 +2169,35 @@ class MainSVM {
       if (Digit < 2) {
         switch (Type.Types)//Horrible
         {
-          case "0": Quest.repeatableQuests[Digit].types.push(Arrays.Types[0])
+          case 0: Quest.repeatableQuests[Digit].types.push(Arrays.Types[0])
             break;
-          case "1": Quest.repeatableQuests[Digit].types.push(Arrays.Types[1])
+          case 1: Quest.repeatableQuests[Digit].types.push(Arrays.Types[1])
             break;
-          case "2": Quest.repeatableQuests[Digit].types.push(Arrays.Types[2])
+          case 2: Quest.repeatableQuests[Digit].types.push(Arrays.Types[2])
             break;
-          case "3": Quest.repeatableQuests[Digit].types.push(Arrays.Types[0], Arrays.Types[1])
+          case 3: Quest.repeatableQuests[Digit].types.push(Arrays.Types[0], Arrays.Types[1])
             break;
-          case "4": Quest.repeatableQuests[Digit].types.push(Arrays.Types[1], Arrays.Types[2])
+          case 4: Quest.repeatableQuests[Digit].types.push(Arrays.Types[1], Arrays.Types[2])
             break;
-          case "5": Quest.repeatableQuests[Digit].types.push(Arrays.Types[2], Arrays.Types[2])
+          case 5: Quest.repeatableQuests[Digit].types.push(Arrays.Types[2], Arrays.Types[2])
             break;
-          case "6": Quest.repeatableQuests[Digit].types.push(Arrays.Types[0], Arrays.Types[1], Arrays.Types[2])
+          case 6: Quest.repeatableQuests[Digit].types.push(Arrays.Types[0], Arrays.Types[1], Arrays.Types[2])
             break;
         }
       }
       else {
         switch (Type.Types) {
-          case "0": Quest.repeatableQuests[2].types.push(Arrays.Types[0])
+          case 0: Quest.repeatableQuests[2].types.push(Arrays.Types[0])
             break;
-          case "1": Quest.repeatableQuests[2].types.push(Arrays.Types[1])
+          case 1: Quest.repeatableQuests[2].types.push(Arrays.Types[1])
             break;
-          case "2": Quest.repeatableQuests[2].types.push(Arrays.Types[0], Arrays.Types[1])
+          case 2: Quest.repeatableQuests[2].types.push(Arrays.Types[0], Arrays.Types[1])
         }
       }
+
       Quest.repeatableQuests[Digit].numQuests = Type.QuestAmount;
-      Quest.repeatableQuests[Digit].minPlayerLevel = Type.Access;
+
+      Quest.repeatableQuests[Digit].minPlayerLevel = Type.Access
       Quest.repeatableQuests[Digit].rewardScaling.rewardSpread = Type.Spread;
       Quest.repeatableQuests[Digit].questConfig.Exploration.maxExtracts = Type.Extracts;
       Quest.repeatableQuests[Digit].questConfig.Completion.minRequestedAmount = Type.MinItems;
@@ -2207,6 +2210,7 @@ class MainSVM {
         Quest.repeatableQuests[Digit].questConfig.Elimination[2].minKills = Type.MinKillsLR3;
         Quest.repeatableQuests[Digit].questConfig.Elimination[2].maxKills = Type.MaxKillsLR3;
       }
+      Logger.warning(Quest.repeatableQuests[Digit])
     }
     function AirdropContents(DBType, Type) {
       if (Airdrop.loot[DBType] != undefined) {
@@ -2230,17 +2234,18 @@ class MainSVM {
         let GPcoins = Type.GPcoins.split(",");
         let SkillChance = Type.SkillChance.split(",");
         let SkillPoint = Type.SkillPoint.split(",");
+
         if ((Levels.length == Exp.length) && (Levels.length == Reputation.length) &&
           (Levels.length == ItemsReward.length) && (Levels.length == Roubles.length) &&
           (Levels.length == GPcoins.length) && (Levels.length == SkillChance.length) && (Levels.length == SkillPoint.length)) {
-          Quest.repeatableQuests[Digit].rewardScaling.levels = Levels
-          Quest.repeatableQuests[Digit].rewardScaling.experience = Exp
-          Quest.repeatableQuests[Digit].rewardScaling.reputation = Reputation
-          Quest.repeatableQuests[Digit].rewardScaling.items = ItemsReward
-          Quest.repeatableQuests[Digit].rewardScaling.roubles = Roubles
-          Quest.repeatableQuests[Digit].rewardScaling.gpCoins = GPcoins
-          Quest.repeatableQuests[Digit].rewardScaling.skillRewardChance = SkillChance
-          Quest.repeatableQuests[Digit].rewardScaling.skillPointReward = SkillPoint
+          Quest.repeatableQuests[Digit].rewardScaling.levels = Levels.map(Number);
+          Quest.repeatableQuests[Digit].rewardScaling.experience = Exp.map(Number);
+          Quest.repeatableQuests[Digit].rewardScaling.reputation = Reputation.map(Number);
+          Quest.repeatableQuests[Digit].rewardScaling.items = ItemsReward.map(Number);
+          Quest.repeatableQuests[Digit].rewardScaling.roubles = Roubles.map(Number);
+          Quest.repeatableQuests[Digit].rewardScaling.gpCoins = GPcoins.map(Number);
+          Quest.repeatableQuests[Digit].rewardScaling.skillRewardChance = SkillChance.map(Number);
+          Quest.repeatableQuests[Digit].rewardScaling.skillPointReward = SkillPoint.map(Number);
         }
         else {
           Logger.error("[SVM] REPEATABLE QUESTS - Daily rewards scales written wrongly, read FAQ, changes ignored.")
