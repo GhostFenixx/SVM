@@ -68,7 +68,6 @@ class MainSVM {
             //const repeatableQuestController = container.resolve("RepeatableQuestController");
             let Edited = repeatableQuestController.changeRepeatableQuest(pmcData, body, sessionID);
             for (let quests in Edited.profileChanges) {
-              Logger.warning(Edited.profileChanges[quests].repeatableQuests[1])
               for (let test in Edited.profileChanges[quests].repeatableQuests[0].changeRequirement) {
                 Edited.profileChanges[quests].repeatableQuests[0].changeRequirement[test].changeCost[0].count = 5000 * Config.Quests.QuestCostMult;
                 if (Config.Quests.QuestRepToZero) {
@@ -2210,7 +2209,6 @@ class MainSVM {
         Quest.repeatableQuests[Digit].questConfig.Elimination[2].minKills = Type.MinKillsLR3;
         Quest.repeatableQuests[Digit].questConfig.Elimination[2].maxKills = Type.MaxKillsLR3;
       }
-      Logger.warning(Quest.repeatableQuests[Digit])
     }
     function AirdropContents(DBType, Type) {
       if (Airdrop.loot[DBType] != undefined) {
