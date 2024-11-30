@@ -1783,8 +1783,8 @@ class MainSVM {
         }
         if (Config.Raids.ForceBTRStash) {
           for (let levels in globals.FenceSettings.Levels) {
-            globals.FenceSettings.Levels[levels].DeliveryGridSize["x"] = Config.Raids.BTRV
-            globals.FenceSettings.Levels[levels].DeliveryGridSize["y"] = Config.Raids.BTRH
+            globals.FenceSettings.Levels[levels].DeliveryGridSize["x"] = Config.Raids.BTRHWidth
+            globals.FenceSettings.Levels[levels].DeliveryGridSize["y"] = Config.Raids.BTRHeight
           }
         }
         globals.BTRSettings.BasePriceTaxi = Config.Raids.BTRTaxiPrice
