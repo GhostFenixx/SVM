@@ -229,7 +229,7 @@ class MainSVM {
                 return HttpResponse.nullResponse();
               }
               catch (e) {
-                Logger.error("[SVM] PMC/SCAV HEALTH - Didn't manage to apply health, new profile?\n" + e)
+                Logger.error("[SVM] PMC/SCAV HEALTH/STATS - Didn't manage to apply settings, new profile?\n" + e)
                 return HttpResponse.nullResponse();
               }
             }
@@ -1023,20 +1023,21 @@ class MainSVM {
         }
         //Remove the keys usage - God i hate how i wrote it
         if (Config.Items.EnableKeys) {
-          if ((base._parent == "5c99f98d86f7745c314214b3" || base._parent == "5c164d2286f774194c5e69fa") && base._props.MaximumNumberOfUsage !== undefined) {
-            if (base._props.MaximumNumberOfUsage == 1 && !Config.Items.AvoidSingleKeys) {
+          if ((base._parent == "5c99f98d86f7745c314214b3") && base._props.MaximumNumberOfUsage !== undefined) {
+
+            if (base._parent == "5c99f98d86f7745c314214b3" && base._props.MaximumNumberOfUsage == 1 && !Config.Items.AvoidSingleKeys) {
               base._props.MaximumNumberOfUsage = 0
             }
-            if (Arrays.MarkedKeys.includes(base._id) && !Config.Items.AvoidMarkedKeys) {
+            if ( Arrays.MarkedKeys.includes(base._id) && !Config.Items.AvoidMarkedKeys) {
               base._props.MaximumNumberOfUsage = 0
             }
             if (!(Arrays.MarkedKeys.includes(base._id)) && base._props.MaximumNumberOfUsage !== 1) {
               base._props.MaximumNumberOfUsage = 0
-            }
-            if (base._parent == "5c164d2286f774194c5e69fa" && Config.Items.InfiniteKeycards) {
-              base._props.MaximumNumberOfUsage = 0
-            }
+            }  
+          }
 
+          if (base._parent == "5c164d2286f774194c5e69fa" && base._props.MaximumNumberOfUsage !== undefined && Config.Items.InfiniteKeycards) {
+            base._props.MaximumNumberOfUsage = 0
           }
           if (base._parent == "5c99f98d86f7745c314214b3" && base._props.MaximumNumberOfUsage != 0) {
             base._props.MaximumNumberOfUsage *= Config.Items.KeyUseMult
@@ -1596,27 +1597,52 @@ class MainSVM {
         }
       }
       Events.events[0].settings.zombieSettings.enabled = !Config.Raids.RaidEvents.DisableZombies
+      //Explanation of this - Turns out SPT's method doesn't seem to convert upper case to lower case with the maps, while BSG's UI requests exactly uppercased scenario
+      //In the end we have bigmap and lab only spawning waves because they are consistent on both sides. I hate my life.
       if (Config.Raids.RaidEvents.RandomInfectionLevel) {
         Events.events[0].settings.zombieSettings.mapInfectionAmount =
         {
           "laboratory": 100,
           "bigmap": Math.floor(Math.random() * 100),
-          "Woods": Math.floor(Math.random() * 100),
-          "Shoreline": Math.floor(Math.random() * 100),
-          "Sandbox": Math.floor(Math.random() * 100),
-          "Interchange": Math.floor(Math.random() * 100),
-          "RezervBase": Math.floor(Math.random() * 100),
-          "TarkovStreets": Math.floor(Math.random() * 100),
+          "woods": Math.floor(Math.random() * 100),
+          "shoreline": Math.floor(Math.random() * 100),
+          "sandbox": Math.floor(Math.random() * 100),
+          "rezervbase": Math.floor(Math.random() * 100),
+          "tarkovstreets": Math.floor(Math.random() * 100),
           "factory4": Math.floor(Math.random() * 100),
-          "Lighthouse": Math.floor(Math.random() * 100)
+          "lighthouse": Math.floor(Math.random() * 100),
+          "interchange": Math.floor(Math.random() * 100)
         }
+        //Hopefully a temporary fix
+        Events.events[0].settings.zombieSettings.mapInfectionAmount["Woods"] = Events.events[0].settings.zombieSettings.mapInfectionAmount["woods"]
+        Events.events[0].settings.zombieSettings.mapInfectionAmount["Shoreline"] = Events.events[0].settings.zombieSettings.mapInfectionAmount["shoreline"]
+        Events.events[0].settings.zombieSettings.mapInfectionAmount["RezervBase"] = Events.events[0].settings.zombieSettings.mapInfectionAmount["rezervbase"]
+        Events.events[0].settings.zombieSettings.mapInfectionAmount["TarkovStreets"] = Events.events[0].settings.zombieSettings.mapInfectionAmount["tarkovstreets"]
+        Events.events[0].settings.zombieSettings.mapInfectionAmount["Lighthouse"] = Events.events[0].settings.zombieSettings.mapInfectionAmount["lighthouse"]
+        Events.events[0].settings.zombieSettings.mapInfectionAmount["Interchange"] = Events.events[0].settings.zombieSettings.mapInfectionAmount["interchange"]
         for(let map in Events.eventBossSpawns.halloweenzombies)
         {
-          for (let wave in  Events.eventBossSpawns.halloweenzombies[map])
+          for (let wave in Events.eventBossSpawns.halloweenzombies[map])
           {
-            if  (Events.eventBossSpawns.halloweenzombies[map][wave].ForceSpawn !== undefined)
+            switch(map)//Feature - Infection level affects spawn chances.
             {
-              Events.eventBossSpawns.halloweenzombies[map].ForceSpawn = true;
+            case "factory4_day":
+              Events.eventBossSpawns.halloweenzombies[map][wave].BossChance = Events.events[0].settings.zombieSettings.mapInfectionAmount.factory4;
+              break;
+            case "factory4_night":
+              Events.eventBossSpawns.halloweenzombies[map][wave].BossChance = Events.events[0].settings.zombieSettings.mapInfectionAmount.factory4;
+            break;
+            case "sandbox":
+              Events.eventBossSpawns.halloweenzombies[map][wave].BossChance = Events.events[0].settings.zombieSettings.mapInfectionAmount.Sandbox;
+            break;
+            case "sandbox_high":
+              Events.eventBossSpawns.halloweenzombies[map][wave].BossChance = Events.events[0].settings.zombieSettings.mapInfectionAmount.Sandbox;
+            break;
+               default:
+                if (Events.events[0].settings.zombieSettings.mapInfectionAmount[map] !== undefined){
+                Events.eventBossSpawns.halloweenzombies[map][wave].BossChance = Events.events[0].settings.zombieSettings.mapInfectionAmount[map];
+                }
+                break;
             }
           }
         }
@@ -1653,7 +1679,8 @@ class MainSVM {
         for (let bosscheck in locations["interchange"].base.BossLocationSpawn)//Looking for exactly Killa wave, even tho he is the only boss here, safety measure
         {
           if (locations["interchange"].base.BossLocationSpawn[bosscheck].BossName == "bossKilla") {
-            locations["interchange"].base.BossLocationSpawn[bosscheck].BossEscortAmount = 1 //by default it's already tagilla as follower.
+            locations["interchange"].base.BossLocationSpawn[bosscheck].BossEscortAmount = 1 
+            locations["interchange"].base.BossLocationSpawn[bosscheck].BossEscortType = "bossTagilla"
           }
         }
       }
@@ -1783,7 +1810,7 @@ class MainSVM {
         }
         if (Config.Raids.ForceBTRStash) {
           for (let levels in globals.FenceSettings.Levels) {
-            globals.FenceSettings.Levels[levels].DeliveryGridSize["x"] = Config.Raids.BTRHWidth
+            globals.FenceSettings.Levels[levels].DeliveryGridSize["x"] = Config.Raids.BTRWidth
             globals.FenceSettings.Levels[levels].DeliveryGridSize["y"] = Config.Raids.BTRHeight
           }
         }
