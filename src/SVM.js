@@ -1023,17 +1023,17 @@ class MainSVM {
         }
         //Remove the keys usage - God i hate how i wrote it
         if (Config.Items.EnableKeys) {
-          if ((base._parent == "5c99f98d86f7745c314214b3") && base._props.MaximumNumberOfUsage !== undefined) {
+          if ((base._parent == "5c99f98d86f7745c314214b3") && base._props.MaximumNumberOfUsage !== undefined  && Config.Items.InfiniteKeys) {
 
             if (base._parent == "5c99f98d86f7745c314214b3" && base._props.MaximumNumberOfUsage == 1 && !Config.Items.AvoidSingleKeys) {
               base._props.MaximumNumberOfUsage = 0
             }
-            if ( Arrays.MarkedKeys.includes(base._id) && !Config.Items.AvoidMarkedKeys) {
+            if (Arrays.MarkedKeys.includes(base._id) && !Config.Items.AvoidMarkedKeys) {
               base._props.MaximumNumberOfUsage = 0
             }
             if (!(Arrays.MarkedKeys.includes(base._id)) && base._props.MaximumNumberOfUsage !== 1) {
               base._props.MaximumNumberOfUsage = 0
-            }  
+            }
           }
 
           if (base._parent == "5c164d2286f774194c5e69fa" && base._props.MaximumNumberOfUsage !== undefined && Config.Items.InfiniteKeycards) {
@@ -1620,27 +1620,25 @@ class MainSVM {
         Events.events[0].settings.zombieSettings.mapInfectionAmount["TarkovStreets"] = Events.events[0].settings.zombieSettings.mapInfectionAmount["tarkovstreets"]
         Events.events[0].settings.zombieSettings.mapInfectionAmount["Lighthouse"] = Events.events[0].settings.zombieSettings.mapInfectionAmount["lighthouse"]
         Events.events[0].settings.zombieSettings.mapInfectionAmount["Interchange"] = Events.events[0].settings.zombieSettings.mapInfectionAmount["interchange"]
-        for(let map in Events.eventBossSpawns.halloweenzombies)
-        {
-          for (let wave in Events.eventBossSpawns.halloweenzombies[map])
-          {
-            switch(map)//Feature - Infection level affects spawn chances.
+        for (let map in Events.eventBossSpawns.halloweenzombies) {
+          for (let wave in Events.eventBossSpawns.halloweenzombies[map]) {
+            switch (map)//Feature - Infection level affects spawn chances.
             {
-            case "factory4_day":
-              Events.eventBossSpawns.halloweenzombies[map][wave].BossChance = Events.events[0].settings.zombieSettings.mapInfectionAmount.factory4;
-              break;
-            case "factory4_night":
-              Events.eventBossSpawns.halloweenzombies[map][wave].BossChance = Events.events[0].settings.zombieSettings.mapInfectionAmount.factory4;
-            break;
-            case "sandbox":
-              Events.eventBossSpawns.halloweenzombies[map][wave].BossChance = Events.events[0].settings.zombieSettings.mapInfectionAmount.Sandbox;
-            break;
-            case "sandbox_high":
-              Events.eventBossSpawns.halloweenzombies[map][wave].BossChance = Events.events[0].settings.zombieSettings.mapInfectionAmount.Sandbox;
-            break;
-               default:
-                if (Events.events[0].settings.zombieSettings.mapInfectionAmount[map] !== undefined){
-                Events.eventBossSpawns.halloweenzombies[map][wave].BossChance = Events.events[0].settings.zombieSettings.mapInfectionAmount[map];
+              case "factory4_day":
+                Events.eventBossSpawns.halloweenzombies[map][wave].BossChance = Events.events[0].settings.zombieSettings.mapInfectionAmount.factory4;
+                break;
+              case "factory4_night":
+                Events.eventBossSpawns.halloweenzombies[map][wave].BossChance = Events.events[0].settings.zombieSettings.mapInfectionAmount.factory4;
+                break;
+              case "sandbox":
+                Events.eventBossSpawns.halloweenzombies[map][wave].BossChance = Events.events[0].settings.zombieSettings.mapInfectionAmount.Sandbox;
+                break;
+              case "sandbox_high":
+                Events.eventBossSpawns.halloweenzombies[map][wave].BossChance = Events.events[0].settings.zombieSettings.mapInfectionAmount.Sandbox;
+                break;
+              default:
+                if (Events.events[0].settings.zombieSettings.mapInfectionAmount[map] !== undefined) {
+                  Events.eventBossSpawns.halloweenzombies[map][wave].BossChance = Events.events[0].settings.zombieSettings.mapInfectionAmount[map];
                 }
                 break;
             }
@@ -1679,7 +1677,7 @@ class MainSVM {
         for (let bosscheck in locations["interchange"].base.BossLocationSpawn)//Looking for exactly Killa wave, even tho he is the only boss here, safety measure
         {
           if (locations["interchange"].base.BossLocationSpawn[bosscheck].BossName == "bossKilla") {
-            locations["interchange"].base.BossLocationSpawn[bosscheck].BossEscortAmount = 1 
+            locations["interchange"].base.BossLocationSpawn[bosscheck].BossEscortAmount = 1
             locations["interchange"].base.BossLocationSpawn[bosscheck].BossEscortType = "bossTagilla"
           }
         }
@@ -1961,52 +1959,52 @@ class MainSVM {
       let p = 0;
       for (let CurTrader in Arrays.traderArray) {
         for (let assortment in traders[Arrays.traderArray[CurTrader]].assort.barter_scheme) {
-          if (traders[Arrays.traderArray[CurTrader]].assort.barter_scheme[assortment][0][0]._tpl == "5449016a4bdc2d6f028b456f" ||
-            traders[Arrays.traderArray[CurTrader]].assort.barter_scheme[assortment][0][0]._tpl == "569668774bdc2da2298b4568" ||
-            traders[Arrays.traderArray[CurTrader]].assort.barter_scheme[assortment][0][0]._tpl == "5696686a4bdc2da3298b456a") {
-            let TempValue = (traders[Arrays.traderArray[CurTrader]].assort.barter_scheme[assortment][0][0].count * SellArray[p]).toFixed(2)//testing
-            traders[Arrays.traderArray[CurTrader]].assort.barter_scheme[assortment][0][0].count = parseFloat(TempValue)
+          let TradeAssort = traders[Arrays.traderArray[CurTrader]].assort.barter_scheme[assortment][0][0];
+          switch (TradeAssort._tpl) {
+            case "5449016a4bdc2d6f028b456f":
+            case "569668774bdc2da2298b4568":
+            case "5696686a4bdc2da3298b456a":
+              if (TradeAssort.count !== undefined) {
+                TradeAssort.count = parseFloat((TradeAssort.count * SellArray[p]).toFixed(2));
+              }
+              break;
           }
         }
         p++;
       }
-      if (Config.Traders.RemoveCurrencyOffers) {
+      if (Config.Traders.RemoveCurrencyOffers || Config.Traders.RemoveBarterOffers) {
         for (let CurTrader in traders) {
           if (CurTrader !== "ragfair" && CurTrader !== "638f541a29ffd1183d187f57" && CurTrader !== "579dc571d53a0658a154fbec") //avoid ragfair, lighthouse trader and fence
           {
             for (let assortment in traders[CurTrader].assort.barter_scheme) {
-              if (traders[CurTrader].assort.barter_scheme[assortment][0][0]._tpl == "5449016a4bdc2d6f028b456f" ||
-                traders[CurTrader].assort.barter_scheme[assortment][0][0]._tpl == "569668774bdc2da2298b4568" ||
-                traders[CurTrader].assort.barter_scheme[assortment][0][0]._tpl == "5696686a4bdc2da3298b456a") {
-                for (let DeletElem in traders[CurTrader].assort.items) {//3.10 rework instead of deleting assort - set everything to 0 instead.
-                  if (traders[CurTrader].assort.items[DeletElem]._id == assortment) {
-                    if (traders[CurTrader].assort.items[DeletElem].upd.UnlimitedCount !== undefined) {
-                      traders[CurTrader].assort.items[DeletElem].upd.UnlimitedCount = false;
+              let TradeAssort = traders[CurTrader].assort.barter_scheme[assortment][0][0];
+              switch (TradeAssort._tpl) {
+                case "5449016a4bdc2d6f028b456f":
+                case "569668774bdc2da2298b4568":
+                case "5696686a4bdc2da3298b456a":
+                  if (Config.Traders.RemoveCurrencyOffers) {
+                    for (let DeletElem in traders[CurTrader].assort.items) {//3.10 rework instead of deleting assort - set everything to 0 instead.
+                      if (traders[CurTrader].assort.items[DeletElem]._id == assortment) {
+                        if (traders[CurTrader].assort.items[DeletElem].upd.UnlimitedCount !== undefined) {
+                          traders[CurTrader].assort.items[DeletElem].upd.UnlimitedCount = false;
+                        }
+                        traders[CurTrader].assort.items[DeletElem].upd["StackObjectsCount"] = 0;
+                      }
                     }
-                    traders[CurTrader].assort.items[DeletElem].upd["StackObjectsCount"] = 0;
                   }
-                }
-              }
-            }
-          }
-        }
-      }
-
-      if (Config.Traders.RemoveBarterOffers) {
-        for (let CurTrader in traders) {
-          if (CurTrader !== "ragfair" && CurTrader !== "638f541a29ffd1183d187f57" && CurTrader !== "579dc571d53a0658a154fbec") {
-            for (let assortment in traders[CurTrader].assort.barter_scheme) {
-              if (traders[CurTrader].assort.barter_scheme[assortment][0][0]._tpl !== "5449016a4bdc2d6f028b456f" &&
-                traders[CurTrader].assort.barter_scheme[assortment][0][0]._tpl !== "569668774bdc2da2298b4568" &&
-                traders[CurTrader].assort.barter_scheme[assortment][0][0]._tpl !== "5696686a4bdc2da3298b456a") {
-                for (let DeletElem in traders[CurTrader].assort.items) {
-                  if (traders[CurTrader].assort.items[DeletElem]._id == assortment) {
-                    if (traders[CurTrader].assort.items[DeletElem].upd.UnlimitedCount !== undefined) {
-                      traders[CurTrader].assort.items[DeletElem].upd.UnlimitedCount = false;
+                  break;
+                default:
+                  if (Config.Traders.RemoveBarterOffers) {
+                    for (let DeletElem in traders[CurTrader].assort.items) {
+                      if (traders[CurTrader].assort.items[DeletElem]._id == assortment) {
+                        if (traders[CurTrader].assort.items[DeletElem].upd.UnlimitedCount !== undefined) {
+                          traders[CurTrader].assort.items[DeletElem].upd.UnlimitedCount = false;
+                        }
+                        traders[CurTrader].assort.items[DeletElem].upd["StackObjectsCount"] = 0;
+                      }
                     }
-                    traders[CurTrader].assort.items[DeletElem].upd["StackObjectsCount"] = 0;
                   }
-                }
+                  break;
               }
             }
           }
