@@ -489,28 +489,28 @@ class MainSVM {
                             case "bossPartisan":
                                 if (i == "bigmap") {
                                     locations[i].base.BossLocationSpawn[x].BossChance = Config.Bots.AIChance.PartisanCustoms
-                                    if (Config.Bots.AiChance.ForcePartisan) {
+                                    if (Config.Bots.AIChance.ForcePartisan) {
                                         locations[i].base.BossLocationSpawn[x].TriggerId = "";
                                         locations[i].base.BossLocationSpawn[x].botEvent = "";
                                     }
                                 }
                                 if (i == "shoreline") {
                                     locations[i].base.BossLocationSpawn[x].BossChance = Config.Bots.AIChance.PartisanShoreline
-                                    if (Config.Bots.AiChance.ForcePartisan) {
+                                    if (Config.Bots.AIChance.ForcePartisan) {
                                         locations[i].base.BossLocationSpawn[x].TriggerId = "";
                                         locations[i].base.BossLocationSpawn[x].botEvent = "";
                                     }
                                 }
                                 if (i == "lighthouse") {
                                     locations[i].base.BossLocationSpawn[x].BossChance = Config.Bots.AIChance.PartisanLighthouse
-                                    if (Config.Bots.AiChance.ForcePartisan) {
+                                    if (Config.Bots.AIChance.ForcePartisan) {
                                         locations[i].base.BossLocationSpawn[x].TriggerId = "";
                                         locations[i].base.BossLocationSpawn[x].botEvent = "";
                                     }
                                 }
                                 if (i == "woods") {
                                     locations[i].base.BossLocationSpawn[x].BossChance = Config.Bots.AIChance.PartisanWoods
-                                    if (Config.Bots.AiChance.ForcePartisan) {
+                                    if (Config.Bots.AIChance.ForcePartisan) {
                                         locations[i].base.BossLocationSpawn[x].TriggerId = "";
                                         locations[i].base.BossLocationSpawn[x].botEvent = "";
                                     }
@@ -1225,21 +1225,19 @@ class MainSVM {
             globals.exp.match_end.killedMult = Config.Player.RaidMult.Killed
 
             //############## Stamina ############## 
-            if( Config.Player.EnableStaminaLegs)
-            {
+            if (Config.Player.EnableStaminaLegs) {
                 globals.Stamina.Capacity = Config.Player.MaxStaminaLegs
                 globals.Stamina.BaseRestorationRate = Config.Player.RegenStaminaLegs
                 globals.Stamina.JumpConsumption = Config.Player.JumpConsumption
                 globals.Stamina.SitToStandConsumption = Config.Player.SitToStandConsumption
             }
-            if( Config.Player.EnableStaminaHands)
-            {
-               // globals.Stamina.AimDrainRate =  Config.Player.
-                globals.Stamina.HandsCapacity =  Config.Player.MaxStaminaHands
+            if (Config.Player.EnableStaminaHands) {
+                // globals.Stamina.AimDrainRate =  Config.Player.
+                globals.Stamina.HandsCapacity = Config.Player.MaxStaminaHands
                 globals.Stamina.HandsRestoration = Config.Player.RegenStaminaHands
-                globals.Stamina.AimConsumptionByPose.x =  Config.Player.LyingDown
-                globals.Stamina.AimConsumptionByPose.y =  Config.Player.Crouching
-                globals.Stamina.AimConsumptionByPose.z =  Config.Player.Standing
+                globals.Stamina.AimConsumptionByPose.x = Config.Player.LyingDown
+                globals.Stamina.AimConsumptionByPose.y = Config.Player.Crouching
+                globals.Stamina.AimConsumptionByPose.z = Config.Player.Standing
             }
             if (Config.Player.UnlimitedStamina) {
                 globals.Stamina.Capacity = 500;
@@ -1271,10 +1269,10 @@ class MainSVM {
             hideout.settings.gpuBoostRate *= Config.Hideout.GPUBoostRate;
             HideoutConfig.cultistCircle.maxRewardItemCount = Config.Hideout.CultistMaxRewards
             for (let time in HideoutConfig.cultistCircle.craftTimeThreshholds) {
-                HideoutConfig.cultistCircle.craftTimeThreshholds[time].craftTimeSeconds = parseInt(craftTimeThreshholds[time].craftTimeSeconds * Config.Hideout.CultistTime)
+                HideoutConfig.cultistCircle.craftTimeThreshholds[time].craftTimeSeconds = parseInt(HideoutConfig.cultistCircle.craftTimeThreshholds[time].craftTimeSeconds * Config.Hideout.CultistTime)
             }
             for (let time in HideoutConfig.cultistCircle.directRewards) {
-                HideoutConfig.cultistCircle.directRewards[time].craftTimeSeconds = parseInt(craftTimeThreshholds[time].craftTimeSeconds * Config.Hideout.CultistTime)
+                HideoutConfig.cultistCircle.directRewards[time].craftTimeSeconds = parseInt(HideoutConfig.cultistCircle.directRewards[time].craftTimeSeconds * Config.Hideout.CultistTime)
             }
 
             if (Config.Hideout.EnableStash) {
@@ -1726,7 +1724,7 @@ class MainSVM {
                 locations["factory4_day"].base.BossLocationSpawn.push(KillaWave)
                 locations["factory4_night"].base.BossLocationSpawn.push(KillaWave)
             }
-            
+
             if (Config.Raids.RaidEvents.TagillaInterchange) {
                 for (let bosscheck in locations["interchange"].base.BossLocationSpawn)//Looking for exactly Killa wave, even tho he is the only boss here, safety measure
                 {
@@ -1822,7 +1820,7 @@ class MainSVM {
                 Glukhar.BossZone = "ZoneScavBase"
                 locations["bigmap"].base.BossLocationSpawn.push(Glukhar)
             }
-            if  (Config.Raids.RaidEvents.CultistBosses) {
+            if (Config.Raids.RaidEvents.CultistBosses) {
                 const Cultists = Waves.Cultists;
                 Cultists.BossChance = Config.Raids.RaidEvents.CultistBossesChance
                 Cultists.OpenZones = locations["bigmap"].base.OpenZones
