@@ -99,9 +99,11 @@ class MainSVM {
 
                             //let event = [];
                             if (Config.Raids.RaidEvents.Christmas) {
+                                SeasonalEventService.christmasEventActive = true;
                                 SeasonalEventService.updateGlobalEvents(globalConfig, Events.events[1]);
                             }
                             if (Config.Raids.RaidEvents.Halloween) {
+                                SeasonalEventService.halloweenEventActive = true;
                                 SeasonalEventService.updateGlobalEvents(globalConfig, Events.events[0]);
                             }
                             return HttpResponse.nullResponse();
@@ -1863,7 +1865,14 @@ class MainSVM {
                     }
                 }
             }
-            //#######BTR STUFF
+            if(Config.Raids.ForceTransitStash)
+            {
+                for (let levels in globals.FenceSettings.Levels) {
+                    globals.FenceSettings.Levels[levels].TransitGridSize["x"] = Config.Raids.TransitWidth
+                    globals.FenceSettings.Levels[levels].TransitGridSize["y"] = Config.Raids.TransitHeight
+                }
+            }
+            //############## BTR STUFF
             if (Config.Raids.EnableBTR) {
                 if (Config.Raids.ForceBTRFriendly) {
                     for (let levels in globals.FenceSettings.Levels) {
