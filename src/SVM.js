@@ -1643,36 +1643,56 @@ class MainSVM {
                                 locations[map].base.exits[extract].EntryPoints = "west,east"
                             }
                             break;
-
                         default:
                             break;
                     }
                 }
             }
+            //Removing that weird event ceasefire.
+            if (Config.Raids.RaidEvents.DisableHalloweenAIFriendly) {
+                for (let bottype in Events.hostilitySettingsForEvent.zombies.default) {
+                    if (Events.hostilitySettingsForEvent.zombies.default[bottype].BotRole == "pmcBEAR") {
+                        Events.hostilitySettingsForEvent.zombies.default[bottype].SavagePlayerBehaviour = "AlwaysEnemies"
+                        for (let behavior in Events.hostilitySettingsForEvent.zombies.default[bottype]) {
+                            if (Events.hostilitySettingsForEvent.zombies.default[bottype].Neutral[behavior] == "pmcUSEC") {
+                                Events.hostilitySettingsForEvent.zombies.default[bottype].Neutral.splice(behavior, 1)
+                            }
+                        }
+                        Events.hostilitySettingsForEvent.zombies.default[bottype].AlwaysEnemies.push("pmcUSEC")
+                    }
+                    else if (Events.hostilitySettingsForEvent.zombies.default[bottype].BotRole == "pmcUSEC") {
+                        Events.hostilitySettingsForEvent.zombies.default[bottype].SavagePlayerBehaviour = "AlwaysEnemies"
+                        for (let behavior in Events.hostilitySettingsForEvent.zombies.default[bottype]) {
+                            if (Events.hostilitySettingsForEvent.zombies.default[bottype].Neutral[behavior] == "pmcBEAR") {
+                                Events.hostilitySettingsForEvent.zombies.default[bottype].Neutral.splice(behavior, 1)
+                            }
+                        }
+                        Events.hostilitySettingsForEvent.zombies.default[bottype].AlwaysEnemies.push("pmcBEAR")
+                    }
+                    else {
+                        Events.hostilitySettingsForEvent.zombies.default[bottype].BearPlayerBehaviour = "AlwaysEnemies"
+                        Events.hostilitySettingsForEvent.zombies.default[bottype].UsecPlayerBehaviour = "AlwaysEnemies"
+                    }
+                }
+            }
+            Quest.showNonSeasonalEventQuests = Config.Raids.RaidEvents.NonSeasonalQuests
             Events.events[0].settings.zombieSettings.enabled = !Config.Raids.RaidEvents.DisableZombies
-            //Explanation of this - Turns out SPT's method doesn't seem to convert upper case to lower case with the maps, while BSG's UI requests exactly uppercased scenario
-            //In the end we have bigmap and lab only spawning waves because they are consistent on both sides. I hate my life.
+
             if (Config.Raids.RaidEvents.RandomInfectionLevel) {
                 Events.events[0].settings.zombieSettings.mapInfectionAmount =
                 {
                     "laboratory": 100,
                     "bigmap": Math.floor(Math.random() * 100),
-                    "woods": Math.floor(Math.random() * 100),
-                    "shoreline": Math.floor(Math.random() * 100),
-                    "sandbox": Math.floor(Math.random() * 100),
-                    "rezervbase": Math.floor(Math.random() * 100),
-                    "tarkovstreets": Math.floor(Math.random() * 100),
+                    "Woods": Math.floor(Math.random() * 100),
+                    "Shoreline": Math.floor(Math.random() * 100),
+                    "Sandbox": Math.floor(Math.random() * 100),
+                    "RezervBase": Math.floor(Math.random() * 100),
+                    "TarkovStreets": Math.floor(Math.random() * 100),
                     "factory4": Math.floor(Math.random() * 100),
-                    "lighthouse": Math.floor(Math.random() * 100),
-                    "interchange": Math.floor(Math.random() * 100)
+                    "Lighthouse": Math.floor(Math.random() * 100),
+                    "Interchange": Math.floor(Math.random() * 100)
                 }
                 //Hopefully a temporary fix
-                Events.events[0].settings.zombieSettings.mapInfectionAmount["Woods"] = Events.events[0].settings.zombieSettings.mapInfectionAmount["woods"]
-                Events.events[0].settings.zombieSettings.mapInfectionAmount["Shoreline"] = Events.events[0].settings.zombieSettings.mapInfectionAmount["shoreline"]
-                Events.events[0].settings.zombieSettings.mapInfectionAmount["RezervBase"] = Events.events[0].settings.zombieSettings.mapInfectionAmount["rezervbase"]
-                Events.events[0].settings.zombieSettings.mapInfectionAmount["TarkovStreets"] = Events.events[0].settings.zombieSettings.mapInfectionAmount["tarkovstreets"]
-                Events.events[0].settings.zombieSettings.mapInfectionAmount["Lighthouse"] = Events.events[0].settings.zombieSettings.mapInfectionAmount["lighthouse"]
-                Events.events[0].settings.zombieSettings.mapInfectionAmount["Interchange"] = Events.events[0].settings.zombieSettings.mapInfectionAmount["interchange"]
                 for (let map in Events.eventBossSpawns.halloweenzombies) {
                     for (let wave in Events.eventBossSpawns.halloweenzombies[map]) {
                         switch (map)//Feature - Infection level affects spawn chances.
@@ -1865,8 +1885,7 @@ class MainSVM {
                     }
                 }
             }
-            if(Config.Raids.ForceTransitStash)
-            {
+            if (Config.Raids.ForceTransitStash) {
                 for (let levels in globals.FenceSettings.Levels) {
                     globals.FenceSettings.Levels[levels].TransitGridSize["x"] = Config.Raids.TransitWidth
                     globals.FenceSettings.Levels[levels].TransitGridSize["y"] = Config.Raids.TransitHeight
