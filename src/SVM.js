@@ -2355,21 +2355,30 @@ class MainSVM {
                 if ((Levels.length == Exp.length) && (Levels.length == Reputation.length) &&
                     (Levels.length == ItemsReward.length) && (Levels.length == Roubles.length) &&
                     (Levels.length == GPcoins.length) && (Levels.length == SkillChance.length) && (Levels.length == SkillPoint.length)) {
-                    Quest.repeatableQuests[Digit].rewardScaling.levels = Levels.map(Number);
-                    Quest.repeatableQuests[Digit].rewardScaling.experience = Exp.map(Number);
-                    Quest.repeatableQuests[Digit].rewardScaling.reputation = Reputation.map(Number);
-                    Quest.repeatableQuests[Digit].rewardScaling.items = ItemsReward.map(Number);
-                    Quest.repeatableQuests[Digit].rewardScaling.roubles = Roubles.map(Number);
-                    Quest.repeatableQuests[Digit].rewardScaling.gpCoins = GPcoins.map(Number);
-                    Quest.repeatableQuests[Digit].rewardScaling.skillRewardChance = SkillChance.map(Number);
-                    Quest.repeatableQuests[Digit].rewardScaling.skillPointReward = SkillPoint.map(Number);
+                    Quest.repeatableQuests[Digit].rewardScaling.levels = ApplyQuestRewardChange(Levels)
+                    Quest.repeatableQuests[Digit].rewardScaling.experience = ApplyQuestRewardChange(Exp)
+                    Quest.repeatableQuests[Digit].rewardScaling.reputation = ApplyQuestRewardChange(Reputation)
+                    Quest.repeatableQuests[Digit].rewardScaling.ItemsReward = ApplyQuestRewardChange(ItemsReward)
+                    Quest.repeatableQuests[Digit].rewardScaling.roubles = ApplyQuestRewardChange(Roubles)
+                    Quest.repeatableQuests[Digit].rewardScaling.gpCoins = ApplyQuestRewardChange(GPcoins)
+                    Quest.repeatableQuests[Digit].rewardScaling.SkillChance = ApplyQuestRewardChange(SkillChance)
+                    Quest.repeatableQuests[Digit].rewardScaling.SkillPoint = ApplyQuestRewardChange(SkillPoint)
                 }
-                else {
+                else {//I think at this point this one is redundant.
                     Logger.error("[SVM] REPEATABLE QUESTS - Daily rewards scales written wrongly, read FAQ, changes ignored.")
                 }
             }
             catch {
                 Logger.error("[SVM] REPEATABLE QUESTS - Daily rewards scales written wrongly, read FAQ, changes ignored.")
+            }
+        }
+        function ApplyQuestRewardChange(Item) {
+            if (!Item.map(Number).includes(NaN)) {
+                return Item.map(Number)
+            }
+            else {
+                Logger.error("[SVM] REPEATABLE QUESTS - Certain field is not a number: " + Item)
+                throw new Error()
             }
         }
         function isJSONValueDefined(value) {
