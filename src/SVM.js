@@ -420,7 +420,7 @@ class MainSVM {
         //############## LOOT SECTION #################
         if (Config.Loot.EnableLoot) {
             //loose loot mults
-            locs.looseLootMultiplier.bigmap = Config.Loot.Locations.Streets.Loose;
+            locs.looseLootMultiplier.bigmap = Config.Loot.Locations.Bigmap.Loose;
             locs.looseLootMultiplier.factory4_day = Config.Loot.Locations.FactoryDay.Loose;
             locs.looseLootMultiplier.factory4_night = Config.Loot.Locations.FactoryNight.Loose;
             locs.looseLootMultiplier.interchange = Config.Loot.Locations.Interchange.Loose;
@@ -1231,7 +1231,8 @@ class MainSVM {
                 globals.Stamina.Capacity = Config.Player.MaxStaminaLegs
                 globals.Stamina.BaseRestorationRate = Config.Player.RegenStaminaLegs
                 globals.Stamina.JumpConsumption = Config.Player.JumpConsumption
-                globals.Stamina.SitToStandConsumption = Config.Player.SitToStandConsumption
+                globals.Stamina.StandupConsumption.x = Config.Player.LayToStand
+                globals.Stamina.StandupConsumption.y = Config.Player.CrouchToStand
             }
             if (Config.Player.EnableStaminaHands) {
                 // globals.Stamina.AimDrainRate =  Config.Player.
