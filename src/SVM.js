@@ -1682,15 +1682,15 @@ class MainSVM {
                 Events.events[0].settings.zombieSettings.mapInfectionAmount =
                 {
                     "laboratory": 100,
-                    "bigmap": Math.floor(Math.random() * 100),
-                    "Woods": Math.floor(Math.random() * 100),
-                    "Shoreline": Math.floor(Math.random() * 100),
-                    "Sandbox": Math.floor(Math.random() * 100),
-                    "RezervBase": Math.floor(Math.random() * 100),
-                    "TarkovStreets": Math.floor(Math.random() * 100),
-                    "factory4": Math.floor(Math.random() * 100),
-                    "Lighthouse": Math.floor(Math.random() * 100),
-                    "Interchange": Math.floor(Math.random() * 100)
+                    "bigmap": Math.floor(Math.random() * 100)+1,
+                    "Woods": Math.floor(Math.random() * 100)+1,
+                    "Shoreline": Math.floor(Math.random() * 100)+1,
+                    "Sandbox": Math.floor(Math.random() * 100)+1,
+                    "RezervBase": Math.floor(Math.random() * 100)+1,
+                    "TarkovStreets": Math.floor(Math.random() * 100)+1,
+                    "factory4": Math.floor(Math.random() * 100)+1,
+                    "Lighthouse": Math.floor(Math.random() * 100)+1,
+                    "Interchange": Math.floor(Math.random() * 100)+1
                 }
                 //Hopefully a temporary fix
                 for (let map in Events.eventBossSpawns.halloweenzombies) {
@@ -2110,12 +2110,48 @@ class MainSVM {
                 PMC.convertIntoPmcChance.default.pmcbot.max = Config.PMC.AItoPMC.RaiderToPMC;
                 PMC.convertIntoPmcChance.default.exusec.max = Config.PMC.AItoPMC.RogueToPMC;
                 PMC.convertIntoPmcChance.default.marksman.max = Config.PMC.AItoPMC.SniperToPMC;
+
+                PMC.convertIntoPmcChance.factory4_day.assault.min = Config.PMC.AItoPMC.ScavToPMCFactory;
+                PMC.convertIntoPmcChance.factory4_day.assault.max = Config.PMC.AItoPMC.ScavToPMCFactory;
                 PMC.isUsec = Config.PMC.PMCRatio;
+                for (let i in locations) {
+                    if (i !== "base" && locations[i].base.BossLocationSpawn !== undefined) {//I Really think this is overkill, but oh well.
+                        for (let ai in locations[i].base.BossLocationSpawn) {
+                            if (locations[i].base.BossLocationSpawn[ai].BossName == "pmcBEAR" || locations[i].base.BossLocationSpawn[ai].BossName == "pmcUSEC") {
+                                let randnum = Math.floor(Math.random()* 100)+1 
+                                if (randnum > Config.PMC.PMCRatio) {
+                                    locations[i].base.BossLocationSpawn[ai].BossName = "pmcBEAR";
+                                }
+                                else {
+                                    locations[i].base.BossLocationSpawn[ai].BossName = "pmcUSEC";
+                                }
+                            }
+                        }
+                    }
+                }
             }
             PMC.botRelativeLevelDeltaMax = Config.PMC.LevelUpMargin;
             PMC.botRelativeLevelDeltaMin = Config.PMC.LevelDownMargin;
             if (Config.PMC.ChancesEnable) {
-                PMC.chanceSameSideIsHostilePercent = Config.PMC.PMCChance.HostilePMC;
+                //1.10.1 Hostility
+                PMC.hostilitySettings.pmcbear.usecEnemyChance = Config.PMC.PMCChance.HostilePMC
+                PMC.hostilitySettings.pmcbear.bearEnemyChance = Config.PMC.PMCChance.HostileSamePMC
+                PMC.hostilitySettings.pmcusec.bearEnemyChance = Config.PMC.PMCChance.HostilePMC
+                PMC.hostilitySettings.pmcusec.usecEnemyChance = Config.PMC.PMCChance.HostileSamePMC
+                for (let diffs in Bot["pmcusec"].difficulty) {
+                    Bot["pmcusec"].difficulty[diffs].Mind.DEFAULT_USEC_BEHAVIOUR = "ChancedEnemies";//Something that live dumps and SPT configs have in conflict
+                    Bot["pmcusec"].difficulty[diffs].Mind.DEFAULT_BEAR_BEHAVIOUR = "ChancedEnemies";
+                    Bot["usec"].difficulty[diffs].Mind.DEFAULT_USEC_BEHAVIOUR = "ChancedEnemies";//No clue whether just 'usec' or 'bear' is required.
+                    Bot["usec"].difficulty[diffs].Mind.DEFAULT_BEAR_BEHAVIOUR = "ChancedEnemies";
+                }
+                for (let diffs in Bot["pmcbear"].difficulty) {
+                    Bot["pmcbear"].difficulty[diffs].Mind.DEFAULT_USEC_BEHAVIOUR = "ChancedEnemies";
+                    Bot["pmcbear"].difficulty[diffs].Mind.DEFAULT_BEAR_BEHAVIOUR = "ChancedEnemies";
+                    Bot["bear"].difficulty[diffs].Mind.DEFAULT_USEC_BEHAVIOUR = "ChancedEnemies";
+                    Bot["bear"].difficulty[diffs].Mind.DEFAULT_BEAR_BEHAVIOUR = "ChancedEnemies";
+                }
+                AIHostility("pmcBEAR", "pmcUSEC")
+                AIHostility("pmcUSEC", "pmcBEAR")
                 PMC.looseWeaponInBackpackChancePercent = Config.PMC.PMCChance.PMCLooseWep;
                 PMC.weaponHasEnhancementChancePercent = Config.PMC.PMCChance.PMCWepEnhance;
                 PMC.addPrefixToSameNamePMCAsPlayerChance = Config.PMC.PMCChance.PMCNamePrefix;
@@ -2255,6 +2291,45 @@ class MainSVM {
 
         //############## FUNCTIONS ##############
         //Set a Unique AI type spawn within selected location, with a lot of variables to come in.
+        function AIHostility(First, Second) {
+            let temp;
+            if (First == "pmcUSEC") {
+                temp = "pmcusec"
+            }
+            else {
+                temp = "pmcbear"
+            }
+            for (let ai in PMC.hostilitySettings[temp].chancedEnemies) {
+                if (PMC.hostilitySettings[temp].chancedEnemies[ai].Role == Second) {
+                    PMC.hostilitySettings[temp].chancedEnemies[ai].EnemyChance = Config.PMC.PMCChance.HostilePMC;
+                }
+                if (PMC.hostilitySettings[temp].chancedEnemies[ai].Role == First) {
+                    PMC.hostilitySettings[temp].chancedEnemies[ai].EnemyChance = Config.PMC.PMCChance.HostileSamePMC;
+                }
+            }
+            for (let i in locations) {
+                if (i !== "base" && locations[i].base.BotLocationModifier.AdditionalHostilitySettings !== undefined) {
+                    for (let ai in locations[i].base.BotLocationModifier.AdditionalHostilitySettings) {
+                        if (locations[i].base.BotLocationModifier.AdditionalHostilitySettings[ai].BotRole == First) {
+                            locations[i].base.BotLocationModifier.AdditionalHostilitySettings[ai].bearEnemyChance = Config.PMC.PMCChance.HostilePMC
+                            locations[i].base.BotLocationModifier.AdditionalHostilitySettings[ai].usecEnemyChance = Config.PMC.PMCChance.HostileSamePMC
+                            for (let hostility in locations[i].base.BotLocationModifier.AdditionalHostilitySettings[ai].ChancedEnemies) {
+                                if (locations[i].base.BotLocationModifier.AdditionalHostilitySettings[ai].ChancedEnemies[hostility].Role == Second) {//Because one PMC type has entry of other type and not themselves
+                                    locations[i].base.BotLocationModifier.AdditionalHostilitySettings[ai].ChancedEnemies[hostility].EnemyChance = Config.PMC.PMCChance.HostilePMC
+                                }
+                            }
+                        }
+                        else//Due to namings of the variables, this extra thing goes
+                        {
+                            locations[i].base.BotLocationModifier.AdditionalHostilitySettings[ai].usecEnemyChance = Config.PMC.PMCChance.HostilePMC
+                            locations[i].base.BotLocationModifier.AdditionalHostilitySettings[ai].bearEnemyChance = Config.PMC.PMCChance.HostileSamePMC
+                        }
+                    }
+                }
+            }
+
+
+        }
         function CreateBoss(role, chance, followers, escortAmount, zones) {
             return {
                 "BossName": role,
