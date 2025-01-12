@@ -1232,7 +1232,7 @@ class MainSVM {
                 globals.Stamina.BaseRestorationRate = Config.Player.RegenStaminaLegs
                 globals.Stamina.JumpConsumption = Config.Player.JumpConsumption
                 globals.Stamina.StandupConsumption.x = Config.Player.LayToStand
-                globals.Stamina.StandupConsumption.y = Config.Player.CrouchToStand
+                globals.Stamina.PoseLevelConsumptionPerNotch.x = Config.Player.CrouchToStand/10;
             }
             if (Config.Player.EnableStaminaHands) {
                 // globals.Stamina.AimDrainRate =  Config.Player.
