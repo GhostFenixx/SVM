@@ -168,7 +168,7 @@ class MainSVM {
                             return HttpResponse.nullResponse();
                         }
                         catch (e) {
-                            Logger.error("[SVM] CSM CUSTOM POCKETS - New profile detected, Cancelling function, restart the game to fix it.\n" + e.message)
+                            Logger.warning("[SVM] REVIVE POCKETS - Attempt cancelled - New profile? Ignore if so.\n" + e.message)
                             return HttpResponse.nullResponse();
                         }
                     }
@@ -1683,15 +1683,15 @@ class MainSVM {
                 Events.events[0].settings.zombieSettings.mapInfectionAmount =
                 {
                     "laboratory": 100,
-                    "bigmap": Math.floor(Math.random() * 100)+1,
-                    "Woods": Math.floor(Math.random() * 100)+1,
-                    "Shoreline": Math.floor(Math.random() * 100)+1,
-                    "Sandbox": Math.floor(Math.random() * 100)+1,
-                    "RezervBase": Math.floor(Math.random() * 100)+1,
-                    "TarkovStreets": Math.floor(Math.random() * 100)+1,
-                    "factory4": Math.floor(Math.random() * 100)+1,
-                    "Lighthouse": Math.floor(Math.random() * 100)+1,
-                    "Interchange": Math.floor(Math.random() * 100)+1
+                    "bigmap": Math.floor(Math.random() * 100) + 1,
+                    "Woods": Math.floor(Math.random() * 100) + 1,
+                    "Shoreline": Math.floor(Math.random() * 100) + 1,
+                    "Sandbox": Math.floor(Math.random() * 100) + 1,
+                    "RezervBase": Math.floor(Math.random() * 100) + 1,
+                    "TarkovStreets": Math.floor(Math.random() * 100) + 1,
+                    "factory4": Math.floor(Math.random() * 100) + 1,
+                    "Lighthouse": Math.floor(Math.random() * 100) + 1,
+                    "Interchange": Math.floor(Math.random() * 100) + 1
                 }
                 //Hopefully a temporary fix
                 for (let map in Events.eventBossSpawns.halloweenzombies) {
@@ -2119,7 +2119,7 @@ class MainSVM {
                     if (i !== "base" && locations[i].base.BossLocationSpawn !== undefined) {//I Really think this is overkill, but oh well.
                         for (let ai in locations[i].base.BossLocationSpawn) {
                             if (locations[i].base.BossLocationSpawn[ai].BossName == "pmcBEAR" || locations[i].base.BossLocationSpawn[ai].BossName == "pmcUSEC") {
-                                let randnum = Math.floor(Math.random()* 100)+1 
+                                let randnum = Math.floor(Math.random() * 100) + 1
                                 if (randnum > Config.PMC.PMCRatio) {
                                     locations[i].base.BossLocationSpawn[ai].BossName = "pmcBEAR";
                                 }
