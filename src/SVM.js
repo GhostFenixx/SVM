@@ -123,7 +123,7 @@ class MainSVM {
         if (Config.Raids.SafeExit) {
             container.afterResolution("MatchCallbacks", (_t, result) => {
                 result.endLocalRaid = (url, info, sessionID) => {
-                    if (info.results.result == "Left") {
+                    if (info.results.result == "Left" && info.results.profile.Info.Side !== "Savage") {
                         info.results.result = "Runner"
                     }
                     const MatchController = container.resolve("MatchController");
@@ -135,7 +135,7 @@ class MainSVM {
         if (Config.Raids.SaveGearAfterDeath) {
             container.afterResolution("MatchCallbacks", (_t, result) => {
                 result.endLocalRaid = (url, info, sessionID) => {
-                    if (info.results.result !== "Survived") {
+                    if (info.results.result !== "Survived" && info.results.profile.Info.Side !== "Savage") {
                         info.results.result = "Runner"
                     }
                     const MatchController = container.resolve("MatchController");
@@ -240,6 +240,7 @@ class MainSVM {
         }
         if (Config.Scav.EnableScavHealth || Config.Scav.ScavCustomPockets || Config.Scav.EnableStats) { // TO OVERRIDE NEXT SCAVS HEALTH + POCKETS 
             //May Omnissiah save our souls, have to use both because register affects deaths and resolution affects extracts. Don't ask
+            // ###### SURVIVED
             container.afterResolution("ProfileController", (_t, result) => {
                 result.generatePlayerScav = (sessionID) => {
                     const playerScavGenerator = container.resolve("PlayerScavGenerator");
@@ -262,13 +263,13 @@ class MainSVM {
                     return scavData;
                 }
             }, { frequency: "Always" });
-
+            // ###### DIED
             StaticRouterModService.registerStaticRouter("EditHealthv2",
                 [
                     {
                         url: "/client/match/local/end",
                         action: (url, info, sessionID) => {
-                            if (info.results.result !== "survived" && info.results.result !== "runner") // 3.9.0 If statement for avoiding rerolling survived SCAV, biggest issue of 1.8.3
+                            if (info.results.result !== "Survived" && info.results.result !== "Runner") // 3.9.0 If statement for avoiding rerolling survived SCAV, biggest issue of 1.8.3
                             {
                                 const saveServer = container.resolve("SaveServer");
                                 const playerScavGenerator = container.resolve("PlayerScavGenerator");
@@ -1232,7 +1233,7 @@ class MainSVM {
                 globals.Stamina.BaseRestorationRate = Config.Player.RegenStaminaLegs
                 globals.Stamina.JumpConsumption = Config.Player.JumpConsumption
                 globals.Stamina.StandupConsumption.x = Config.Player.LayToStand
-                globals.Stamina.PoseLevelConsumptionPerNotch.x = Config.Player.CrouchToStand/10;
+                globals.Stamina.PoseLevelConsumptionPerNotch.x = Config.Player.CrouchToStand / 10;
             }
             if (Config.Player.EnableStaminaHands) {
                 // globals.Stamina.AimDrainRate =  Config.Player.
@@ -2388,7 +2389,6 @@ class MainSVM {
                     case 2: Quest.repeatableQuests[2].types.push(Arrays.Types[0], Arrays.Types[1])
                 }
             }
-
             Quest.repeatableQuests[Digit].numQuests = Type.QuestAmount;
 
             Quest.repeatableQuests[Digit].minPlayerLevel = Type.Access
