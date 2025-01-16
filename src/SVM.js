@@ -1272,9 +1272,9 @@ class MainSVM {
             hideout.settings.airFilterUnitFlowRate *= Config.Hideout.AirFilterRate;
             hideout.settings.gpuBoostRate *= Config.Hideout.GPUBoostRate;
             HideoutConfig.cultistCircle.maxRewardItemCount = Config.Hideout.CultistMaxRewards
+            HideoutConfig.cultistCircle.hideoutTaskRewardTimeSeconds = parseInt( HideoutConfig.cultistCircle.hideoutTaskRewardTimeSeconds * Config.Hideout.CultistTime)
             for (let time in HideoutConfig.cultistCircle.craftTimeThreshholds) {
                 HideoutConfig.cultistCircle.craftTimeThreshholds[time].craftTimeSeconds = parseInt(HideoutConfig.cultistCircle.craftTimeThreshholds[time].craftTimeSeconds * Config.Hideout.CultistTime)
-                HideoutConfig.cultistCircle.hideoutTaskRewardTimeSeconds = parseInt( HideoutConfig.cultistCircle.hideoutTaskRewardTimeSeconds * Config.Hideout.CultistTime)
             }
             for (let time in HideoutConfig.cultistCircle.directRewards) {
                 HideoutConfig.cultistCircle.directRewards[time].craftTimeSeconds = parseInt(HideoutConfig.cultistCircle.directRewards[time].craftTimeSeconds * Config.Hideout.CultistTime)
