@@ -1274,6 +1274,7 @@ class MainSVM {
             HideoutConfig.cultistCircle.maxRewardItemCount = Config.Hideout.CultistMaxRewards
             for (let time in HideoutConfig.cultistCircle.craftTimeThreshholds) {
                 HideoutConfig.cultistCircle.craftTimeThreshholds[time].craftTimeSeconds = parseInt(HideoutConfig.cultistCircle.craftTimeThreshholds[time].craftTimeSeconds * Config.Hideout.CultistTime)
+                HideoutConfig.cultistCircle.hideoutTaskRewardTimeSeconds = parseInt( HideoutConfig.cultistCircle.hideoutTaskRewardTimeSeconds * Config.Hideout.CultistTime)
             }
             for (let time in HideoutConfig.cultistCircle.directRewards) {
                 HideoutConfig.cultistCircle.directRewards[time].craftTimeSeconds = parseInt(HideoutConfig.cultistCircle.directRewards[time].craftTimeSeconds * Config.Hideout.CultistTime)
