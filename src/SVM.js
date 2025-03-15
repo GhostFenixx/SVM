@@ -27,62 +27,6 @@ class MainSVM {
         const StaticRouterModService = container.resolve("StaticRouterModService");
         const HttpResponse = container.resolve("HttpResponseUtil");
         const repeatableQuestController = container.resolve("RepeatableQuestController");
-
-        //PRE LOAD - QUESTS SECTION
-        if (Config.Quests.EnableQuests && Config.Quests.EnableQuestsMisc)//Horrible, as usual
-        {
-            try {
-                container.afterResolution("QuestCallbacks", (_t, result) => {
-                    result.activityPeriods = (url, info, sessionID) => {
-                        let Edited = repeatableQuestController.getClientRepeatableQuests(sessionID);
-                        for (let quests in Edited) {
-                            for (let act in Edited[quests].activeQuests) {//this needs to be trimmed as well, eventually.
-                                if (Edited[quests].activeQuests[act].changeCost[0].count !== undefined) {
-                                    Edited[quests].activeQuests[act].changeCost[0].count = 5000 * Config.Quests.QuestCostMult;
-                                }
-                                if (Config.Quests.QuestRepToZero) {
-                                    Edited[quests].activeQuests[act].changeStandingCost = 0;
-                                }
-                            }
-                            for (let inact in Edited[quests].inactiveQuests) {
-                                if (Edited[quests].inactiveQuests[inact].changeCost[0].count !== undefined) {
-                                    Edited[quests].inactiveQuests[inact].changeCost[0].count = 5000 * Config.Quests.QuestCostMult;
-                                }
-                                if (Config.Quests.QuestRepToZero) {
-                                    Edited[quests].inactiveQuests[inact].changeStandingCost = 0;
-                                }
-                            }
-                            for (let req in Edited[quests].changeRequirement) {
-                                Edited[quests].changeRequirement[req].changeCost[0].count = 5000 * Config.Quests.QuestCostMult;
-                                if (Config.Quests.QuestRepToZero) {
-                                    Edited[quests].changeRequirement[req].changeStandingCost = 0;
-                                }
-                            }
-                        }
-                        return HttpResponse.getBody(Edited);
-                    }
-                }, { frequency: "Always" });
-
-                container.afterResolution("QuestCallbacks", (_t, result) => {
-                    result.changeRepeatableQuest = (pmcData, body, sessionID) => {
-                        //const repeatableQuestController = container.resolve("RepeatableQuestController");
-                        let Edited = repeatableQuestController.changeRepeatableQuest(pmcData, body, sessionID);
-                        for (let quests in Edited.profileChanges) {
-                            for (let test in Edited.profileChanges[quests].repeatableQuests[0].changeRequirement) {
-                                Edited.profileChanges[quests].repeatableQuests[0].changeRequirement[test].changeCost[0].count = 5000 * Config.Quests.QuestCostMult;
-                                if (Config.Quests.QuestRepToZero) {
-                                    Edited.profileChanges[quests].repeatableQuests[0].changeRequirement[test].changeStandingCost = 0;
-                                }
-                            }
-                        }
-                        return Edited;
-                    }
-                }, { frequency: "Always" });
-            }
-            catch (e) {
-                Logger.error("[SVM] REPEATABLE QUEST HANDLED EXCEPTION - Something wrong attempting to change quest reroll price\n" + e.message + "\n");
-            }
-        }
         //PRE LOAD - RAIDS SECTION
         if (Config.Raids.RaidEvents.Halloween || Config.Raids.RaidEvents.Christmas)//Extra check, just in case
         {
@@ -189,7 +133,7 @@ class MainSVM {
                                 return HttpResponse.nullResponse();
                             }
                             catch (e) {
-                                Logger.error("[SVM] CSM CUSTOM POCKETS - New profile detected, Cancelling function, restart the game to fix it.\n" + e.message)
+                                Logger.warning("[SVM] CSM CUSTOM POCKETS - New profile detected, Cancelling function, restart the game to fix it.\n" + e.message)
                                 return HttpResponse.nullResponse();
                             }
                         }
@@ -232,7 +176,7 @@ class MainSVM {
                                 return HttpResponse.nullResponse();
                             }
                             catch (e) {
-                                Logger.error("[SVM] PMC/SCAV HEALTH/STATS - Didn't manage to apply settings, new profile?\n" + e)
+                                Logger.warning("[SVM] PMC/SCAV HEALTH/STATS - Didn't manage to apply settings, new profile?\n" + e)
                                 return HttpResponse.nullResponse();
                             }
                         }
@@ -269,7 +213,7 @@ class MainSVM {
                     {
                         url: "/client/match/local/end",
                         action: (url, info, sessionID) => {
-                            if (info.results.result !== "Survived" && info.results.result !== "Runner") // 3.9.0 If statement for avoiding rerolling survived SCAV, biggest issue of 1.8.3
+                            if (info.results.result !== "Survived" && info.results.result !== "Transit" && info.results.result !== "Runner") // 3.9.0 If statement for avoiding rerolling survived SCAV, biggest issue of 1.8.3
                             {
                                 const saveServer = container.resolve("SaveServer");
                                 const playerScavGenerator = container.resolve("PlayerScavGenerator");
@@ -352,6 +296,7 @@ class MainSVM {
         //const Inventory = configServer.getConfig("aki-inventory");
         const BlackItems = configServer.getConfig("spt-item");
         const PMC = configServer.getConfig("spt-pmc")
+
         //############## FLEAMARKET SECTION ###########
         if (Config.Fleamarket.EnableFleamarket) {
             if (Config.Fleamarket.EnablePlayerOffers) {
@@ -600,39 +545,20 @@ class MainSVM {
 
             const BotTypeID = ["assault", "marksman", "pmcbot", "exusec", "pmc", "boss", "follower"]
             for (let durab in BotTypeID) {
-                Bots.durability[BotTypeID[durab]].weapon.lowestMax = BotWepMinID[durab];
-                Bots.durability[BotTypeID[durab]].weapon.highestMax = BotWepMaxID[durab];
-                Bots.durability[BotTypeID[durab]].armor.maxDelta = 100 - BotArmorMinID[durab];
-                Bots.durability[BotTypeID[durab]].armor.minDelta = 100 - BotArmorMaxID[durab];
+                AdjustDurab(Bots.durability[BotTypeID[durab]], BotWepMinID[durab], BotWepMaxID[durab], BotArmorMinID[durab], BotArmorMaxID[durab])
                 switch (BotTypeID[durab]) {
                     case "assault":
-                        Bots.durability["cursedassault"].weapon.lowestMax = BotWepMinID[durab]
-                        Bots.durability["cursedassault"].weapon.highestMax = BotWepMaxID[durab]
-                        Bots.durability["cursedassault"].armor.maxDelta = 100 - BotArmorMinID[durab];
-                        Bots.durability["cursedassault"].armor.minDelta = 100 - BotArmorMaxID[durab];
-
-                        Bots.durability["crazyassaultevent"].weapon.lowestMax = BotWepMinID[durab]
-                        Bots.durability["crazyassaultevent"].weapon.highestMax = BotWepMaxID[durab]
-                        Bots.durability["crazyassaultevent"].armor.maxDelta = 100 - BotArmorMinID[durab];
-                        Bots.durability["crazyassaultevent"].armor.minDelta = 100 - BotArmorMaxID[durab];
+                        AdjustDurab(Bots.durability["cursedassault"], BotWepMinID[durab], BotWepMaxID[durab], BotArmorMinID[durab], BotArmorMaxID[durab])
+                        AdjustDurab(Bots.durability["crazyassaultevent"], BotWepMinID[durab], BotWepMaxID[durab], BotArmorMinID[durab], BotArmorMaxID[durab])
                         break;
                     case "pmcbot":
-                        Bots.durability["arenafighterevent"].weapon.lowestMax = BotWepMinID[durab]
-                        Bots.durability["arenafighterevent"].weapon.highestMax = BotWepMaxID[durab]
-                        Bots.durability["arenafighterevent"].armor.maxDelta = 100 - BotArmorMinID[durab];
-                        Bots.durability["arenafighterevent"].armor.minDelta = 100 - BotArmorMaxID[durab];
+                        AdjustDurab(Bots.durability["arenafighterevent"], BotWepMinID[durab], BotWepMaxID[durab], BotArmorMinID[durab], BotArmorMaxID[durab])
                         break
                     case "boss":
-                        Bots.durability["sectantpriest"].weapon.lowestMax = BotWepMinID[durab];
-                        Bots.durability["sectantpriest"].weapon.highestMax = BotWepMaxID[durab];
-                        Bots.durability["sectantpriest"].armor.maxDelta = 100 - BotArmorMinID[durab];
-                        Bots.durability["sectantpriest"].armor.minDelta = 100 - BotArmorMaxID[durab];
+                        AdjustDurab(Bots.durability["sectantpriest"], BotWepMinID[durab], BotWepMaxID[durab], BotArmorMinID[durab], BotArmorMaxID[durab])
                         break;
                     case "follower":
-                        Bots.durability["sectantwarrior"].weapon.lowestMax = BotWepMinID[durab];
-                        Bots.durability["sectantwarrior"].weapon.highestMax = BotWepMaxID[durab];
-                        Bots.durability["sectantwarrior"].armor.maxDelta = 100 - BotArmorMinID[durab];
-                        Bots.durability["sectantwarrior"].armor.minDelta = 100 - BotArmorMaxID[durab];
+                        AdjustDurab(Bots.durability["sectantwarrior"], BotWepMinID[durab], BotWepMaxID[durab], BotArmorMinID[durab], BotArmorMaxID[durab])
                         break;
                 }
             }
@@ -875,7 +801,8 @@ class MainSVM {
                     Cases.InjectorCase,
                     Cases.KeycardHolderCase,
                     Cases.GKeychain,
-                    Cases.StreamerCase
+                    Cases.StreamerCase,
+                    Cases.ArmorPlateCase
                 ]
                 const Filts = [ // I think i can shortcut this eventually
                     Cases.MoneyCase.Filter,
@@ -899,7 +826,8 @@ class MainSVM {
                     Cases.InjectorCase.Filter,
                     Cases.KeycardHolderCase.Filter,
                     Cases.GKeychain.Filter,
-                    Cases.StreamerCase.Filter
+                    Cases.StreamerCase.Filter,
+                    Cases.ArmorPlateCase.Filter
                 ]
                 for (let Case in Arrays.CasesID) {
                     items[Arrays.CasesID[Case]]._props.Grids[0]._props["cellsV"] = Size[Case].Height;
@@ -989,6 +917,7 @@ class MainSVM {
                 if (base._type !== "Node" && base._type !== undefined && (base._parent !== "557596e64bdc2dc2118b4571" || base._parent !== "55d720f24bdc2d88028b456d")) {
                     EditSimpleItemData(id, "Weight", parseFloat(Config.Items.WeightChanger * base._props.Weight).toFixed(3));
                 }
+                //Remove gear penalty
                 if (Config.Items.NoGearPenalty) {
                     if (base._props.mousePenalty) {
                         EditSimpleItemData(id, "mousePenalty", 0)
@@ -1056,14 +985,17 @@ class MainSVM {
                 //Remove the keys usage - God i hate how i wrote it
                 if (Config.Items.EnableKeys) {
                     if ((base._parent == "5c99f98d86f7745c314214b3") && base._props.MaximumNumberOfUsage !== undefined && Config.Items.InfiniteKeys) {
-
                         if (base._parent == "5c99f98d86f7745c314214b3" && base._props.MaximumNumberOfUsage == 1 && !Config.Items.AvoidSingleKeys) {
                             base._props.MaximumNumberOfUsage = 0
                         }
                         if (Arrays.MarkedKeys.includes(base._id) && !Config.Items.AvoidMarkedKeys) {
                             base._props.MaximumNumberOfUsage = 0
                         }
-                        if (!(Arrays.MarkedKeys.includes(base._id)) && base._props.MaximumNumberOfUsage !== 1) {
+                        if(Arrays.OddKeys.includes(base._id) && !Config.Items.AvoidOddKeys)//Currently list is static, maybe i'll rework to just consider changing due to odd numbers.
+                            {
+                                base._props.MaximumNumberOfUsage = 0
+                            }
+                        if (!Arrays.MarkedKeys.includes(base._id) && !Arrays.OddKeys.includes(base._id) && base._props.MaximumNumberOfUsage !== 1) {
                             base._props.MaximumNumberOfUsage = 0
                         }
                     }
@@ -1272,7 +1204,7 @@ class MainSVM {
             hideout.settings.airFilterUnitFlowRate *= Config.Hideout.AirFilterRate;
             hideout.settings.gpuBoostRate *= Config.Hideout.GPUBoostRate;
             HideoutConfig.cultistCircle.maxRewardItemCount = Config.Hideout.CultistMaxRewards
-            HideoutConfig.cultistCircle.hideoutTaskRewardTimeSeconds = parseInt( HideoutConfig.cultistCircle.hideoutTaskRewardTimeSeconds * Config.Hideout.CultistTime)
+            HideoutConfig.cultistCircle.hideoutTaskRewardTimeSeconds = parseInt(HideoutConfig.cultistCircle.hideoutTaskRewardTimeSeconds * Config.Hideout.CultistTime)
             for (let time in HideoutConfig.cultistCircle.craftTimeThreshholds) {
                 HideoutConfig.cultistCircle.craftTimeThreshholds[time].craftTimeSeconds = parseInt(HideoutConfig.cultistCircle.craftTimeThreshholds[time].craftTimeSeconds * Config.Hideout.CultistTime)
             }
@@ -1444,6 +1376,7 @@ class MainSVM {
                             }
                             if (locations[i].base.exits[x].PassageRequirement == "TransferItem" && Config.Raids.EnableCarCoop) {
                                 locations[i].base.exits[x].ExfiltrationTime = Config.Raids.Exfils.CarExtractTime;
+                                locations[i].base.exits[x].ExfiltrationTimePVE = Config.Raids.Exfils.CarExtractTime;
                                 switch (i) {
                                     case "woods":
                                         if (Config.Raids.Exfils.CarWoods !== 0) {
@@ -1588,6 +1521,7 @@ class MainSVM {
                         for (let x in locations[i].base.exits) {
                             if (locations[i].base.exits[x].Name !== "EXFIL_Train") {
                                 locations[i].base.exits[x].Chance = 100;
+                                locations[i].base.exits[x].ChancePVE = 100;
                             }
                         }
                     }
@@ -1909,7 +1843,7 @@ class MainSVM {
                 }
                 globals.BTRSettings.BasePriceTaxi = Config.Raids.BTRTaxiPrice
                 globals.BTRSettings.CleanUpPrice = Config.Raids.BTRCoverPrice
-                globals.BTRSettings.BearPriceMod = Config.Raids.BearMults
+                globals.BTRSettings.BearPriceMod = Config.Raids.BearMult
                 globals.BTRSettings.UsecPriceMod = Config.Raids.UsecMult
                 globals.BTRSettings.ScavPriceMod = Config.Raids.ScavMult
             }
@@ -2100,34 +2034,17 @@ class MainSVM {
         }
         //############## PMC SECTION ##################,
         if (Config.PMC.EnablePMC) {
-            if (Config.PMC.EnableConvert) {
-                PMC.convertIntoPmcChance.default.assault.min = Config.PMC.AItoPMC.ScavToPMC;
-                PMC.convertIntoPmcChance.default.cursedassault.min = Config.PMC.AItoPMC.CursedToPMC;
-                PMC.convertIntoPmcChance.default.pmcbot.min = Config.PMC.AItoPMC.RaiderToPMC;
-                PMC.convertIntoPmcChance.default.exusec.min = Config.PMC.AItoPMC.RogueToPMC;
-                PMC.convertIntoPmcChance.default.marksman = {};
-                PMC.convertIntoPmcChance.default.marksman.min = Config.PMC.AItoPMC.SnipertoPMC;
-
-                PMC.convertIntoPmcChance.default.assault.max = Config.PMC.AItoPMC.ScavToPMC;
-                PMC.convertIntoPmcChance.default.cursedassault.max = Config.PMC.AItoPMC.CursedToPMC;
-                PMC.convertIntoPmcChance.default.pmcbot.max = Config.PMC.AItoPMC.RaiderToPMC;
-                PMC.convertIntoPmcChance.default.exusec.max = Config.PMC.AItoPMC.RogueToPMC;
-                PMC.convertIntoPmcChance.default.marksman.max = Config.PMC.AItoPMC.SniperToPMC;
-
-                PMC.convertIntoPmcChance.factory4_day.assault.min = Config.PMC.AItoPMC.ScavToPMCFactory;
-                PMC.convertIntoPmcChance.factory4_day.assault.max = Config.PMC.AItoPMC.ScavToPMCFactory;
-                PMC.isUsec = Config.PMC.PMCRatio;
-                for (let i in locations) {
-                    if (i !== "base" && locations[i].base.BossLocationSpawn !== undefined) {//I Really think this is overkill, but oh well.
-                        for (let ai in locations[i].base.BossLocationSpawn) {
-                            if (locations[i].base.BossLocationSpawn[ai].BossName == "pmcBEAR" || locations[i].base.BossLocationSpawn[ai].BossName == "pmcUSEC") {
-                                let randnum = Math.floor(Math.random() * 100) + 1
-                                if (randnum > Config.PMC.PMCRatio) {
-                                    locations[i].base.BossLocationSpawn[ai].BossName = "pmcBEAR";
-                                }
-                                else {
-                                    locations[i].base.BossLocationSpawn[ai].BossName = "pmcUSEC";
-                                }
+            PMC.isUsec = Config.PMC.PMCRatio;
+            for (let i in locations) {
+                if (i !== "base" && locations[i].base.BossLocationSpawn !== undefined) {//I Really think this is overkill, but oh well.
+                    for (let ai in locations[i].base.BossLocationSpawn) {
+                        if (locations[i].base.BossLocationSpawn[ai].BossName == "pmcBEAR" || locations[i].base.BossLocationSpawn[ai].BossName == "pmcUSEC") {
+                            let randnum = Math.floor(Math.random() * 100) + 1
+                            if (randnum > Config.PMC.PMCRatio) {
+                                locations[i].base.BossLocationSpawn[ai].BossName = "pmcBEAR";
+                            }
+                            else {
+                                locations[i].base.BossLocationSpawn[ai].BossName = "pmcUSEC";
                             }
                         }
                     }
@@ -2200,6 +2117,17 @@ class MainSVM {
             const Daily = Config.Quests.DailyQuests;
             const Weekly = Config.Quests.WeeklyQuests;
             const ScavDaily = Config.Quests.ScavQuests;
+            //Logger.info(DB.templates.repeatableQuests.templates)
+            if (Config.Quests.EnableQuestsMisc) {
+                for (let types in DB.templates.repeatableQuests.templates) {
+                    DB.templates.repeatableQuests.templates[types].changeCost[0].count *= Config.Quests.QuestCostMult
+                }
+                if (Config.Quests.QuestRepToZero) {
+                    for (let types in Quest.repeatableQuests) {
+                        Quest.repeatableQuests[types].standingChangeCost = [0];
+                    }
+                }
+            }
             //Requirements
             QuestDetails(Daily, "0")
             QuestDetails(Weekly, "1")
@@ -2533,6 +2461,12 @@ class MainSVM {
             else {
                 return JSON.parse(object)
             }
+        }
+        function AdjustDurab(Type, WepMin, WepMax, ArmMin, ArmMax) {
+            Type.weapon.lowestMax = WepMin;
+            Type.weapon.highestMax = WepMax;
+            Type.armor.maxDelta = 100 - ArmMax;
+            Type.armor.minDelta = 100 - ArmMin;
         }
         function SymbolCheck(Value) {
             return (Value == "*" || Value == "/" || Value == "+" || Value == "-");
