@@ -2319,7 +2319,8 @@ class MainSVM {
                 }
             }
             Quest.repeatableQuests[Digit].numQuests = Type.QuestAmount;
-
+            Quest.repeatableQuests[Digit].freeChanges = Type.Reroll
+            Quest.repeatableQuests[Digit].freeChangesAvailable = Type.Reroll
             Quest.repeatableQuests[Digit].minPlayerLevel = Type.Access
             Quest.repeatableQuests[Digit].rewardScaling.rewardSpread = Type.Spread;
             Quest.repeatableQuests[Digit].questConfig.Exploration.maxExtracts = Type.Extracts;
