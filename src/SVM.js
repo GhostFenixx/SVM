@@ -1892,7 +1892,6 @@ class MainSVM {
             Mark.Ref
             ]
             for (let CurTrader in Arrays.traderArray) {
-                Logger.info(traders[Arrays.traderArray[CurTrader]].base.nickname)
                 for (let level in traders[Arrays.traderArray[CurTrader]].base.loyaltyLevels) {
                     traders[Arrays.traderArray[CurTrader]].base.loyaltyLevels[level].buy_price_coef = 100 - MarkArray[CurTrader]
                 }
