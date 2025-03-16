@@ -21,12 +21,10 @@ class MainSVM {
             Logger.error(e.message + "\n");
             return
         }
-
         const PresetLoader = require('../Loader/loader.json');
         const Config = require('../Presets/' + PresetLoader.CurrentlySelectedPreset + '.json');
         const StaticRouterModService = container.resolve("StaticRouterModService");
         const HttpResponse = container.resolve("HttpResponseUtil");
-        const repeatableQuestController = container.resolve("RepeatableQuestController");
         //PRE LOAD - RAIDS SECTION
         if (Config.Raids.RaidEvents.Halloween || Config.Raids.RaidEvents.Christmas)//Extra check, just in case
         {
@@ -991,10 +989,10 @@ class MainSVM {
                         if (Arrays.MarkedKeys.includes(base._id) && !Config.Items.AvoidMarkedKeys) {
                             base._props.MaximumNumberOfUsage = 0
                         }
-                        if(Arrays.OddKeys.includes(base._id) && !Config.Items.AvoidOddKeys)//Currently list is static, maybe i'll rework to just consider changing due to odd numbers.
-                            {
-                                base._props.MaximumNumberOfUsage = 0
-                            }
+                        if (Arrays.OddKeys.includes(base._id) && !Config.Items.AvoidOddKeys)//Currently list is static, maybe i'll rework to just consider changing due to odd numbers.
+                        {
+                            base._props.MaximumNumberOfUsage = 0
+                        }
                         if (!Arrays.MarkedKeys.includes(base._id) && !Arrays.OddKeys.includes(base._id) && base._props.MaximumNumberOfUsage !== 1) {
                             base._props.MaximumNumberOfUsage = 0
                         }
@@ -1267,7 +1265,7 @@ class MainSVM {
                 }
             }
             //Remove construction requirements
-            if (Config.Hideout.RemoveConstructionsRequirements || Config.Hideout.RemoveSkillRequirements || Config.Hideout.RemoveTraderLevelRequirements) {
+            if (Config.Hideout.RemoveConstructionsRequirements || Config.Hideout.RemoveSkillRequirements || Config.Hideout.RemoveTraderLevelRequirements || Config.Hideout.RemoveConstructionsFIRRequirements) {
                 for (const data in hideout.areas) {
                     let areaData = hideout.areas[data]
                     for (const stage in areaData.stages) {
@@ -1275,6 +1273,9 @@ class MainSVM {
                             let rewriter = [];
                             for (let req in areaData.stages[stage].requirements)//This is horrible
                             {
+                                if (areaData.stages[stage].requirements[req].hasOwnProperty("isSpawnedInSession") && Config.Hideout.RemoveConstructionsFIRRequirements) {
+                                    areaData.stages[stage].requirements[req].isSpawnedInSession = false;
+                                }
                                 if (areaData.stages[stage].requirements[req].hasOwnProperty("templateId") && !Config.Hideout.RemoveConstructionsRequirements) {
                                     rewriter.push(areaData.stages[stage].requirements[req])
                                 }
@@ -1887,17 +1888,13 @@ class MainSVM {
             Mark.Peacekeeper,
             Mark.Mechanic,
             Mark.Ragman,
-            Mark.Jaeger
+            Mark.Jaeger,
+            Mark.Ref
             ]
-            let i = 0;
-            for (let CurTrader in traders) {//Bad solution to avoid modded traders.
-                if (CurTrader !== "ragfair" && (CurTrader == "5a7c2eca46aef81a7ca2145d" || CurTrader == "5ac3b934156ae10c4430e83c" ||
-                    CurTrader == "5c0647fdd443bc2504c2d371" || CurTrader == "54cb50c76803fa8b248b4571" || CurTrader == "54cb57776803fa99248b456e" ||
-                    CurTrader == "579dc571d53a0658a154fbec" || CurTrader == "5935c25fb3acc3127c3d8cd9" || CurTrader == "58330581ace78e27b8b10cee")) {
-                    for (let level in traders[CurTrader].base.loyaltyLevels) {
-                        traders[CurTrader].base.loyaltyLevels[level].buy_price_coef = 100 - MarkArray[i]
-                    }
-                    i++
+            for (let CurTrader in Arrays.traderArray) {
+                Logger.info(traders[Arrays.traderArray[CurTrader]].base.nickname)
+                for (let level in traders[Arrays.traderArray[CurTrader]].base.loyaltyLevels) {
+                    traders[Arrays.traderArray[CurTrader]].base.loyaltyLevels[level].buy_price_coef = 100 - MarkArray[CurTrader]
                 }
             }
             //Enable all the quests
@@ -1975,23 +1972,27 @@ class MainSVM {
             Sell.Peacekeeper,
             Sell.Mechanic,
             Sell.Ragman,
-            Sell.Jaeger
+            Sell.Jaeger,
+            Sell.Ref
             ]
             let p = 0;
             for (let CurTrader in Arrays.traderArray) {
-                for (let assortment in traders[Arrays.traderArray[CurTrader]].assort.barter_scheme) {
-                    let TradeAssort = traders[Arrays.traderArray[CurTrader]].assort.barter_scheme[assortment][0][0];
-                    switch (TradeAssort._tpl) {
-                        case "5449016a4bdc2d6f028b456f":
-                        case "569668774bdc2da2298b4568":
-                        case "5696686a4bdc2da3298b456a":
-                            if (TradeAssort.count !== undefined) {
-                                TradeAssort.count = parseFloat((TradeAssort.count * SellArray[p]).toFixed(2));
-                            }
-                            break;
+                if (Arrays.traderArray[CurTrader] != "579dc571d53a0658a154fbec") { //Bandaid, added it to fit markup yet there is no assort to edit for fence
+                    for (let assortment in traders[Arrays.traderArray[CurTrader]].assort.barter_scheme) {
+                        let TradeAssort = traders[Arrays.traderArray[CurTrader]].assort.barter_scheme[assortment][0][0];
+                        switch (TradeAssort._tpl) {
+                            case "5449016a4bdc2d6f028b456f":
+                            case "569668774bdc2da2298b4568":
+                            case "5696686a4bdc2da3298b456a":
+                            case "5d235b4d86f7742e017bc88a":
+                                if (TradeAssort.count !== undefined) {
+                                    TradeAssort.count = parseFloat((TradeAssort.count * SellArray[p]).toFixed(2));
+                                }
+                                break;
+                        }
                     }
+                    p++;
                 }
-                p++;
             }
             if (Config.Traders.RemoveCurrencyOffers || Config.Traders.RemoveBarterOffers) {
                 for (let CurTrader in traders) {
@@ -2032,7 +2033,7 @@ class MainSVM {
                 }
             }
         }
-        //############## PMC SECTION ##################,
+        //############## PMC SECTION ##################
         if (Config.PMC.EnablePMC) {
             PMC.isUsec = Config.PMC.PMCRatio;
             for (let i in locations) {
