@@ -1032,8 +1032,8 @@ class MainSVM {
                 try {
                     if (Config.Items.IDParent.length > 0) { //ID=ParentID, same as above
                         let ParentList = Config.Items.IDParent.split("\r\n")
-                        let IDArray = [];
                         for (let Line in ParentList) {
+                            let IDArray = [];
                             if (!ParentList[Line].startsWith("#") && !ParentList[Line].startsWith("//") && !ParentList[Line] == "") {
                                 const Variables = ParentList[Line].split(":")
                                 Logger.info("Parent: " + Variables)
