@@ -77,7 +77,7 @@ class MainSVM {
         if (Config.Raids.SaveGearAfterDeath) {
             container.afterResolution("MatchCallbacks", (_t, result) => {
                 result.endLocalRaid = (url, info, sessionID) => {
-                    if (info.results.result !== "Survived" && info.results.profile.Info.Side !== "Savage") {
+                    if (info.results.result !== "Survived" && info.results.result !== "Transit" && info.results.profile.Info.Side !== "Savage") {
                         info.results.result = "Runner"
                     }
                     const MatchController = container.resolve("MatchController");
